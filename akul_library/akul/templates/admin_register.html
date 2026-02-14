@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Register | Library Management</title>
+  <link rel="stylesheet" href="{% static 'admin_auth.css' %}" />
+</head>
+<body>
+
+  <div class="background">
+    <div class="circle one"></div>
+    <div class="circle two"></div>
+    <div class="circle three"></div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h1>📚 Admin Register</h1>
+      <p class="subtitle">Create your Admin Account</p>
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="inputBox">
+          <input type="text" name="username" required />
+          <span>Full Name</span>
+        </div>
+
+        <div class="inputBox">
+          <input type="email" name="email" required />
+          <span>Email</span>
+        </div>
+
+        <div class="inputBox">
+          <input type="password" name="password" required />
+          <span>Password</span>
+        </div>
+
+        <div class="inputBox">
+          <input type="password" name="confirm_password" required />
+          <span>Confirm Password</span>
+        </div>
+
+        <button type="submit" class="btn">Register</button>
+
+        <p class="text">
+          Already Registered?
+          <a href="{% url 'admin_login' %}">Login</a>
+        </p>
+
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

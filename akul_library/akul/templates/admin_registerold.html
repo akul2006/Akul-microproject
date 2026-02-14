@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Register | Library Management</title>
+  <link rel="stylesheet" href="../static/admin_auth.css" />
+</head>
+<body>
+
+  <div class="background">
+    <div class="circle one"></div>
+    <div class="circle two"></div>
+    <div class="circle three"></div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h1>📚 Admin Register</h1>
+      <p class="subtitle">Create your Admin Account</p>
+
+      <form id="registerForm">
+
+        <div class="inputBox">
+          <input type="text" id="name" required />
+          <span>Full Name</span>
+        </div>
+
+        <div class="inputBox">
+          <input type="email" id="email" required />
+          <span>Email</span>
+        </div>
+
+        <div class="inputBox">
+          <input type="password" id="password" required />
+          <span>Password</span>
+        </div>
+
+        <div class="inputBox">
+          <input type="password" id="confirmPassword" required />
+          <span>Confirm Password</span>
+        </div>
+
+        <button type="submit" class="btn">Register</button>
+
+        <p class="text">
+          Already Registered?
+          <a href="admin_login.html">Login</a>
+        </p>
+
+      </form>
+    </div>
+  </div>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  let name = document.getElementById("name").value.trim();
+  let email = document.getElementById("email").value.trim();
+  let password = document.getElementById("password").value.trim();
+  let confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+  if (password !== confirmPassword) {
+    alert("❌ Passwords do not match!");
+    return;
+  }
+
+  let admin = {
+    name: name,
+    email: email,
+    password: password
+  };
+
+  localStorage.setItem("adminAccount", JSON.stringify(admin));
+  alert("✅ Admin Registered Successfully!");
+
+  window.location.href = "admin_login.html";
+});
+</script>
+
+</body>
+</html>

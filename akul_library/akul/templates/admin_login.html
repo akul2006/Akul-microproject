@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login | Library Management</title>
+  <link rel="stylesheet" href="{% static 'admin_auth.css' %}" />
+</head>
+<body>
+
+  <div class="background">
+    <div class="circle one"></div>
+    <div class="circle two"></div>
+    <div class="circle three"></div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h1>🔐 Admin Login</h1>
+      <p class="subtitle">Login to Admin Dashboard</p>
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="inputBox">
+          <input type="text" name="username" required />
+          <span>Username</span>
+        </div>
+
+        <div class="inputBox">
+          <input type="password" name="password" required />
+          <span>Password</span>
+        </div>
+
+        <button type="submit" class="btn">Login</button>
+
+        <p class="text">
+          New Admin?
+          <a href="{% url 'admin_register' %}">Register</a>
+        </p>
+
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

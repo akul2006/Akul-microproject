@@ -1,0 +1,31 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.admin_login, name='admin_login'),
+    path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('register/', views.admin_register, name='admin_register'),
+    path('logout/', views.admin_logout, name='admin_logout'),
+    path('add_book/', views.add_book, name='add_book'),
+    path('add_author/', views.add_author, name='add_author'),
+    path('add_publisher/', views.add_publisher, name='add_publisher'),
+    path('add_user/', views.add_user, name='add_user'),
+    path('add_penalty/', views.add_penalty, name='add_penalty'),
+    path('add_member/', views.add_member, name='add_member'),
+    path('edit_book/', views.edit_book, name='edit_book'),
+    path('delete_book/<int:book_id>/', views.delete_book, name='delete_book'),
+    path('fix_sequences/', views.fix_sequences, name='fix_sequences'),
+    path('issue_book/', views.issue_book, name='issue_book'),
+    path('return_book/', views.return_book, name='return_book'),
+    path('delete_penalty/', views.delete_penalty, name='delete_penalty'),
+    path('mark_penalty_paid/<int:penalty_id>/', views.mark_penalty_paid, name='mark_penalty_paid'),
+    path('edit_user/', views.edit_user, name='edit_user'),
+    path('delete_user/', views.delete_user, name='delete_user'),
+    path('edit_publisher/', views.edit_publisher, name='edit_publisher'),
+    path('delete_publisher/', views.delete_publisher, name='delete_publisher'),
+    path('edit_author/', views.edit_author, name='edit_author'),
+    path('delete_author/<int:author_id>/', views.delete_author, name='delete_author'),
+    path('edit_member/', views.edit_member, name='edit_member'),
+    path('delete_member/', views.delete_member, name='delete_member'),
+    path('update_settings/', views.update_settings, name='update_settings'),
+    ]

@@ -1,0 +1,1418 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System - Admin</title>
+    <link rel="stylesheet" href="{% static 'admin_styles.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; 
+            padding: 25px;
+            border: 1px solid #888;
+            width: 50%; 
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-modal:hover { color: #000; }
+        .modal-book-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        .modal-book-item:last-child { border-bottom: none; }
+        .modal-book-icon { margin-right: 10px; font-size: 1.2em; }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">📚</div>
+            <h2>Library Advisor</h2>
+        </div>
+        
+        <nav class="nav-menu">
+            <ul>
+                <li>
+                    <a href="#" onclick="showPage('dashboard')" class="nav-link active">
+                        <span class="icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showPage('books')" class="nav-link">
+                        <span class="icon">📚</span>
+                        <span>Books</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showPage('circulations')" class="nav-link">
+                        <span class="icon">🔄</span>
+                        <span>Books Circulation</span>
+                    </a>
+                </li>
+                <!-- <li>
+                    <a href="#" onclick="showPage('requests')" class="nav-link">
+                        <span class="icon">📝</span>
+                        <span>Books Requests</span>
+                    </a>
+                </li> -->
+                <li>
+                    <a href="#" onclick="showPage('members')" class="nav-link">
+                        <span class="icon">👥</span>
+                        <span>Members</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showPage('publishers')" class="nav-link">
+                        <span class="icon">🏢</span>
+                        <span>Publishers</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showPage('authors')" class="nav-link">
+                        <span class="icon">✍️</span>
+                        <span>Authors</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showPage('users')" class="nav-link">
+                        <span class="icon">👤</span>
+                        <span>Users</span>
+                    </a>
+                </li>
+                <!-- <li>
+                    <a href="#" onclick="showPage('roles')" class="nav-link">
+                        <span class="icon">🔐</span>
+                        <span>Roles & Permission</span>
+                    </a>
+                </li> -->
+                <li>
+                    <a href="#" onclick="showPage('penalties')" class="nav-link">
+                        <span class="icon">⚠️</span>
+                        <span>Penalties</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showPage('settings')" class="nav-link">
+                        <span class="icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="{% url 'admin_logout' %}" class="nav-link logout-btn">
+                <span class="icon">⏻</span>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <div class="header-icon">ℹ️</div>
+                <div class="header-text">
+                    <h1>Library Management System</h1>
+                    <p>Welcome, {{ user.username }}</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="search-box">
+                    <!-- <input type="text" id="searchInput" placeholder="Search Books">
+                    <span class="search-icon">🔍</span> -->
+                </div>
+                <div class="notification-icon" onclick="toggleNotifications()">
+                    🔔
+                    {% if unread_count > 0 %}
+                    <span class="notification-badge">{{ unread_count }}</span>
+                    {% endif %}
+                </div>
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=4A90E2&color=fff" alt="Admin">
+                    <div class="user-info">
+                        <span class="user-name">{{ user.username }}</span>
+                        <span class="user-role">Admin</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown" id="notificationDropdown">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+                <h3 style="margin: 0;">Notifications</h3>
+                <div style="display: flex; gap: 10px;">
+                    <form method="POST" action="{% url 'admin_dashboard' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="notification_action" value="mark_read">
+                        <button type="submit" style="background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.8em; padding: 0;">Mark all read</button>
+                    </form>
+                    <form method="POST" action="{% url 'admin_dashboard' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="notification_action" value="clear">
+                        <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 0.8em; padding: 0;">Clear</button>
+                    </form>
+                </div>
+            </div>
+            {% for notification in notifications %}
+            <div class="notification-item" style="{% if not notification.read %}background-color: #f0f7ff; border-left: 3px solid #007bff;{% endif %}">
+                <span class="notif-icon">
+                    {% if 'request' in notification.message|lower %}📚
+                    {% elif 'overdue' in notification.message|lower %}⚠️
+                    {% elif 'member' in notification.message|lower %}👤
+                    {% else %}🔔{% endif %}
+                </span>
+                <div class="notif-content">
+                    <p>{{ notification.message }}</p>
+                    <span class="notif-time">{{ notification.created_at|timesince }} ago</span>
+                </div>
+            </div>
+            {% empty %}
+            <p style="padding: 15px; text-align: center; color: #6c757d;">No new notifications</p>
+            {% endfor %}
+        </div>
+
+        <!-- Display Messages (Success/Error) -->
+        {% if messages %}
+        <div style="padding: 20px 20px 0;">
+            {% for message in messages %}
+            <div style="padding: 15px; margin-bottom: 10px; border-radius: 5px; font-weight: 500;
+                        {% if message.tags == 'success' %}background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;
+                        {% elif message.tags == 'error' %}background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+                        {% else %}background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db;{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <!-- Statistics Cards -->
+            <div class="stats-container">
+                <div class="stat-card blue">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-info">
+                        <h3 id="totalBooks">{{ total_books }}</h3>
+                        <p>Total Books</p>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3 id="totalMembers">{{ total_members }}</h3>
+                        <p>Total Members</p>
+                    </div>
+                </div>
+                <div class="stat-card cyan">
+                    <div class="stat-icon">📖</div>
+                    <div class="stat-info">
+                        <h3 id="issuedBooks">{{ issued_books_count }}</h3>
+                        <p>Issued Books</p>
+                    </div>
+                </div>
+                <div class="stat-card yellow">
+                    <div class="stat-icon">📑</div>
+                    <div class="stat-info">
+                        <h3 id="reservedBooks">{{ reserved_books_count }}</h3>
+                        <p>Reserved Books</p>
+                    </div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon">⏰</div>
+                    <div class="stat-info">
+                        <h3 id="overdueBooks">{{ overdue_books_count }}</h3>
+                        <p>Overdue Books</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Left Section -->
+                <div class="dashboard-left">
+                    <!-- Library Usage Chart -->
+                    <div class="chart-container" style="position: relative; width: 100%;">
+                        <div class="chart-header">
+                            <h2>Library Uses</h2>
+                            <select class="filter-dropdown" onchange="window.location.href='?tab=dashboard&chart_range='+this.value">
+                                <option value="6_months" {% if request.GET.chart_range == '6_months' %}selected{% endif %}>Last 6 months</option>
+                                <option value="last_year" {% if request.GET.chart_range == 'last_year' %}selected{% endif %}>Last year</option>
+                                <option value="last_week" {% if request.GET.chart_range == 'last_week' %}selected{% endif %}>Last week</option>
+                            </select>
+                        </div>
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-color members"></span>Members</span>
+                            <span class="legend-item"><span class="legend-color issues"></span>Issues</span>
+                        </div>
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="usageChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Revenue/Penalty Chart -->
+                    <div class="chart-container" style="position: relative; width: 100%;">
+                        <div class="chart-header">
+                            <h2>Revenue</h2>
+                            <select class="filter-dropdown">
+                                <option>Last 8 months</option>
+                                <option>Last 6 months</option>
+                                <option>Last year</option>
+                            </select>
+                        </div>
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Library Activity Table
+                    <div class="activity-container">
+                        <div class="activity-header">
+                            <h2>Library Activity</h2>
+                            <select class="filter-dropdown">
+                                <option>Last Month</option>
+                                <option>Last Week</option>
+                                <option>Today</option>
+                            </select>
+                        </div>
+                        <table class="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Books</th>
+                                    <th>Members Info</th>
+                                    <th>Issue & Due Date</th>
+                                    <th>Return Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityTableBody">
+                                Dynamic content
+                            </tbody>
+                        </table>
+                    </div> -->
+                </div>
+
+                <!-- Right Sidebar -->
+                <div class="dashboard-right">
+                    <!-- Issued Books -->
+                    <div class="issued-books-section">
+                        <div class="section-header">
+                            <h2>Issued Books</h2>
+                            <select class="filter-dropdown">
+                                <option>This month</option>
+                                <option>This week</option>
+                                <option>Today</option>
+                            </select>
+                        </div>
+                        <div id="issuedBooksList" class="issued-books-list">
+                            {% for circ in circulations|slice:":4" %}
+                            <div class="issued-book-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                                <div>
+                                    <h4 style="margin: 0; font-size: 14px;">{{ circ.book.title }}</h4>
+                                    <p style="margin: 0; font-size: 12px; color: #666;">To: {{ circ.member.name }}</p>
+                                </div>
+                                <span style="font-size: 12px; color: #888;">{{ circ.issue_date|date:"M d" }}</span>
+                            </div>
+                            {% empty %}
+                            <p style="padding: 15px; text-align: center; color: #6c757d;">No issued books.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Top Authors -->
+                    <div class="top-authors-section">
+                        <div class="section-header">
+                            <h2>Top Author</h2>
+                            <select class="filter-dropdown">
+                                <option>This month</option>
+                                <option>This week</option>
+                                <option>All time</option>
+                            </select>
+                        </div>
+                        <div id="topAuthorsList" class="top-authors-list">
+                            {% for author in authors|slice:":5" %}
+                            <div class="author-item">
+                                <img src="https://ui-avatars.com/api/?name={{ author.name }}&background=random" alt="{{ author.name }}" class="author-avatar">
+                                <div class="author-info">
+                                    <h3>{{ author.name }}</h3>
+                                    <div class="author-stats">
+                                        <span>📚 {{ author.book_set.count }} Books</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p style="padding: 15px; text-align: center; color: #6c757d;">No authors found.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Books Page -->
+        <div id="books" class="page">
+            <div class="page-header">
+                <h1>Books Management</h1>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" onclick="openAddBookModal()">+ Add New Book</button>
+                </div>
+            </div>
+            <form method="GET" action="{% url 'admin_dashboard' %}" style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="text" name="search_query" value="{{ search_query|default:'' }}" placeholder="Search books by title..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                <button type="submit" class="btn-primary" style="padding: 12px 25px;">Search</button>
+                {% if search_query %}
+                <a href="{% url 'admin_dashboard' %}?tab=books" class="btn-primary" style="padding: 12px 25px; background-color: #6c757d; text-decoration: none; display: flex; align-items: center; justify-content: center;">Clear</a>
+                {% endif %}
+            </form>
+            <div class="users-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Cover</th>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="booksTableBody">
+                        {% for book in books %}
+                        <tr>
+                            <td>
+                                {% if book.thumbnail_link %}
+                                <img src="{{ book.thumbnail_link }}" alt="{{ book.title }}" style="width: 40px; height: 60px; object-fit: cover; border-radius: 4px;">
+                                {% else %}
+                                <div style="width: 40px; height: 60px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 20px;">📖</div>
+                                {% endif %}
+                            </td>
+                            <td>{{ book.title }}</td>
+                            <td>{{ book.author.name|default:book.author }}</td>
+                            <td>
+                                <button class="action-btn edit-btn" onclick="openEditBookModal('{{ book.id }}', '{{ book.title|escapejs }}', '{{ book.author.id }}', '{{ book.isbn|escapejs }}', '{{ book.total_quantity }}', '{{ book.available_quantity }}', '{{ book.thumbnail_link|escapejs }}')" style="margin-right: 5px;">✎</button>
+                                <form method="POST" action="{% url 'delete_book' book.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this book?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn delete-btn">🗑</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 20px; color: #666;">No books available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Authors Page -->
+        <div id="authors" class="page">
+            <div class="page-header">
+                <h1>Authors Management</h1>
+                <button class="btn-primary" onclick="openAddAuthorModal()">+ Add New Author</button>
+            </div>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="text" id="authorSearch" onkeyup="filterTable('authorSearch', 'authorsTableBody', 'authorSearchClear')" placeholder="Search authors..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                <button class="btn-primary" onclick="filterTable('authorSearch', 'authorsTableBody', 'authorSearchClear')" style="padding: 12px 25px;">Search</button>
+                <button id="authorSearchClear" class="btn-primary" onclick="clearSearch('authorSearch', 'authorsTableBody', 'table', 'authorSearchClear')" style="padding: 12px 25px; background-color: #6c757d; display: none;">Clear</button>
+            </div>
+            <div class="users-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Author Name</th>
+                            <th>Books Published</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="authorsTableBody">
+                        {% for author in authors %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="openAuthorModal(this)" title="Click to view bio">
+                                    <img src="https://ui-avatars.com/api/?name={{ author.name }}&background=random" alt="{{ author.name }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                    <span class="author-name-text" style="color: #0056b3; font-weight: 500; text-decoration: underline;">{{ author.name }}</span>
+                                    <div class="author-bio-data" style="display: none;">{{ author.bio|default:"No biography available for this author." }}</div>
+                                </div>
+                            </td>
+                            <td>{{ author.book_set.count }} Books</td>
+                            <td>
+                                <button class="action-btn edit-btn" onclick="openEditAuthorModal('{{ author.id }}', '{{ author.name|escapejs }}', '{{ author.bio|escapejs }}')" style="margin-right: 5px;">✎</button>
+                                <button class="action-btn delete-btn" onclick="deleteAuthor('{{ author.id }}')">🗑</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 20px; color: #666;">No authors found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Users Page -->
+        <div id="users" class="page">
+            <div class="page-header">
+                <h1>Users Management</h1>
+                <button class="btn-primary" onclick="openAddUserModal()">+ Add New User</button>
+            </div>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="text" id="userSearch" onkeyup="filterTable('userSearch', 'usersTableBody', 'userSearchClear')" placeholder="Search users..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                <button class="btn-primary" onclick="filterTable('userSearch', 'usersTableBody', 'userSearchClear')" style="padding: 12px 25px;">Search</button>
+                <button id="userSearchClear" class="btn-primary" onclick="clearSearch('userSearch', 'usersTableBody', 'table', 'userSearchClear')" style="padding: 12px 25px; background-color: #6c757d; display: none;">Clear</button>
+            </div>
+            <div class="users-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        {% for user_item in users %}
+                        <tr>
+                            <td>#{{ user_item.id }}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="https://ui-avatars.com/api/?name={{ user_item.username }}&background=random" alt="{{ user_item.username }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                    {{ user_item.username }}
+                                </div>
+                            </td>
+                            <td>{{ user_item.email }}</td>
+                            <td>{% if user_item.is_superuser %}Admin{% else %}Member{% endif %}</td>
+                            <td>
+                                <span style="padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; background: {% if user_item.is_active %}#e6f4ea{% else %}#fce8e6{% endif %}; color: {% if user_item.is_active %}#1e7e34{% else %}#c5221f{% endif %};">
+                                    {% if user_item.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="action-btn edit-btn" onclick="openEditUserModal('{{ user_item.id }}', '{{ user_item.username|escapejs }}', '{{ user_item.email|escapejs }}', '{{ user_item.is_superuser }}', '{{ user_item.is_active }}')" style="margin-right: 5px;">✎</button>
+                                <form method="POST" action="{% url 'delete_user' %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="user_id" value="{{ user_item.id }}">
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this user?')">🗑</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 20px; color: #666;">No users found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Penalties Page -->
+        <div id="penalties" class="page">
+            <div class="page-header">
+                <h1>Penalties Management</h1>
+                <button class="btn-primary" onclick="openAddPenaltyModal()">+ Add Penalty</button>
+            </div>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="text" id="penaltySearch" onkeyup="filterTable('penaltySearch', 'penaltiesTableBody', 'penaltySearchClear')" placeholder="Search penalties..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                <button class="btn-primary" onclick="filterTable('penaltySearch', 'penaltiesTableBody', 'penaltySearchClear')" style="padding: 12px 25px;">Search</button>
+                <button id="penaltySearchClear" class="btn-primary" onclick="clearSearch('penaltySearch', 'penaltiesTableBody', 'table', 'penaltySearchClear')" style="padding: 12px 25px; background-color: #6c757d; display: none;">Clear</button>
+            </div>
+            <div class="penalties-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Book</th>
+                            <th>Due Date</th>
+                            <th>Days Overdue</th>
+                            <th>Penalty Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="penaltiesTableBody">
+                        {% for penalty in penalties %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="https://ui-avatars.com/api/?name={{ penalty.member.name }}&background=random" alt="{{ penalty.member.name }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                    {{ penalty.member.name }}
+                                </div>
+                            </td>
+                            <td>{{ penalty.book.title|default:"-" }}</td>
+                            <td>{{ penalty.due_date|default:"-" }}</td>
+                            <td>{{ penalty.days_overdue|default:"0" }}</td>
+                            <td>₹{{ penalty.amount }}</td>
+                            <td>
+                                <span class="status-badge {% if penalty.status == 'Paid' %}returned{% else %}active{% endif %}">
+                                    {{ penalty.status|default:"Pending" }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if penalty.status != 'Paid' %}
+                                <form method="POST" action="{% url 'mark_penalty_paid' penalty.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn edit-btn" style="background-color: #28a745; margin-right: 5px;" title="Mark as Paid">✓</button>
+                                </form>
+                                {% endif %}
+                                <form method="POST" action="{% url 'delete_penalty' %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="penalty_id" value="{{ penalty.id }}">
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this penalty?')">🗑</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 20px; color: #666;">No penalties found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings" class="page">
+            <div class="settings-content">
+                <h1>System Settings</h1>
+                <form method="POST" action="{% url 'update_settings' %}">
+                    {% csrf_token %}
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <h3>Library Information</h3>
+                            <div class="setting-item">
+                                <label>Library Name</label>
+                                <input type="text" name="library_name" value="{{ lib_settings.library_name }}" class="setting-input">
+                            </div>
+                            <div class="setting-item">
+                                <label>Address</label>
+                                <input type="text" name="address" value="{{ lib_settings.address }}" class="setting-input">
+                            </div>
+                            <div class="setting-item">
+                                <label>Contact</label>
+                                <input type="text" name="contact" value="{{ lib_settings.contact }}" class="setting-input">
+                            </div>
+                        </div>
+                        <div class="setting-card">
+                            <h3>Penalty Settings</h3>
+                            <div class="setting-item">
+                                <label>Penalty per Day (₹)</label>
+                                <input type="number" name="penalty_per_day" value="{{ lib_settings.penalty_per_day }}" class="setting-input">
+                            </div>
+                            <div class="setting-item">
+                                <label>Maximum Penalty (₹)</label>
+                                <input type="number" name="max_penalty" value="{{ lib_settings.max_penalty }}" class="setting-input">
+                            </div>
+                        </div>
+                        <div class="setting-card">
+                            <h3>Borrow Settings</h3>
+                            <div class="setting-item">
+                                <label>Borrow Duration (Days)</label>
+                                <input type="number" name="loan_duration" value="{{ lib_settings.loan_duration }}" class="setting-input">
+                            </div>
+                            <div class="setting-item">
+                                <label>Max Books per Member</label>
+                                <input type="number" name="max_books" value="{{ lib_settings.max_books }}" class="setting-input">
+                            </div>
+                        </div>
+                        <!-- <div class="setting-card">
+                            <h3>Maintenance</h3>
+                            <div class="setting-item">
+                                <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">If you see "Integrity Error" or cannot add books, click below to fix the database IDs.</p>
+                                <a href="{% url 'fix_sequences' %}" class="btn-primary" style="text-decoration: none; display: inline-block; text-align: center; background-color: #28a745;">Fix Database IDs</a>
+                            </div>
+                        </div> -->
+                    </div>
+                    <button type="submit" class="btn-primary save-settings">Save Settings</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Other Pages (Simplified) -->
+        <div id="circulations" class="page">
+            <div class="page-header">
+                <h1>Books Circulation</h1>
+                <button class="btn-primary" onclick="openIssueBookModal()">+ Issue Book</button>
+            </div>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="text" id="circulationSearch" onkeyup="filterTable('circulationSearch', 'circulationsTableBody', 'circulationSearchClear')" placeholder="Search circulations..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                <button class="btn-primary" onclick="filterTable('circulationSearch', 'circulationsTableBody', 'circulationSearchClear')" style="padding: 12px 25px;">Search</button>
+                <button id="circulationSearchClear" class="btn-primary" onclick="clearSearch('circulationSearch', 'circulationsTableBody', 'table', 'circulationSearchClear')" style="padding: 12px 25px; background-color: #6c757d; display: none;">Clear</button>
+            </div>
+            <div class="users-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Book</th>
+                            <th>Due Date</th>
+                            <th>Return Date</th>
+                            <th>Issue Date</th>
+                            <th>Status</th>
+                            <th>Fine</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="circulationsTableBody">
+                        {% for circ in circulations %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="https://ui-avatars.com/api/?name={{ circ.member.name }}&background=random" alt="{{ circ.member.name }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                    {{ circ.member.name }}
+                                </div>
+                            </td>
+                            <td>{{ circ.book.title }}</td>
+                            <td>{{ circ.due_date }}</td>
+                            <td>{{ circ.return_date|default:"-" }}</td>
+                            <td>{{ circ.issue_date|default:"-" }}</td>
+                            <td>
+                                <span class="status-badge {% if circ.status == 'issued' %}active{% else %}returned{% endif %}">
+                                    {{ circ.status|title }}
+                                </span>
+                            </td>
+                            <td>{% if circ.fine_amount %}₹{{ circ.fine_amount }}{% else %}-{% endif %}</td>
+                            <td>
+                                {% if circ.status == 'issued' %}
+                                <form method="POST" action="{% url 'return_book' %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="circulation_id" value="{{ circ.id }}">
+                                    <button type="submit" class="action-btn delete-btn" style="background-color: #28a745;">Return</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 20px; color: #666;">No circulation records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- <div id="requests" class="page">
+            <div class="page-header">
+                <h1>Book Requests</h1>
+            </div>
+            <div class="requests-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Book</th>
+                            <th>Request Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsTableBody">
+                        {% for request in requests %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=random" alt="{{ request.user.username }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                    {{ request.user.username }}
+                                </div>
+                            </td>
+                            <td>{{ request.book.title }}</td>
+                            <td>{{ request.request_date|date:"M d, Y" }}</td>
+                            <td>
+                                <span style="padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; background: {% if request.status == 'Approved' %}#e6f4ea{% elif request.status == 'Pending' %}#fff8e1{% else %}#fce8e6{% endif %}; color: {% if request.status == 'Approved' %}#1e7e34{% elif request.status == 'Pending' %}#f57f17{% else %}#c5221f{% endif %};">
+                                    {{ request.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if request.status == 'Pending' %}
+                                <button class="action-btn approve-btn" title="Approve" style="color: #28a745;">✓</button>
+                                <button class="action-btn reject-btn" title="Reject" style="color: #dc3545;">✕</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px; color: #666;">No book requests found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div> -->
+
+        <div id="members" class="page">
+            <div class="page-header">
+                <h1>Members Management</h1>
+                <button class="btn-primary" onclick="openAddMemberModal()">+ Add New Member</button>
+            </div>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="text" id="memberSearch" onkeyup="filterTable('memberSearch', 'membersTableBody', 'memberSearchClear')" placeholder="Search members..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                <button class="btn-primary" onclick="filterTable('memberSearch', 'membersTableBody', 'memberSearchClear')" style="padding: 12px 25px;">Search</button>
+                <button id="memberSearchClear" class="btn-primary" onclick="clearSearch('memberSearch', 'membersTableBody', 'table', 'memberSearchClear')" style="padding: 12px 25px; background-color: #6c757d; display: none;">Clear</button>
+            </div>
+            <div class="users-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Joined Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersTableBody">
+                        {% for member in members %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="https://ui-avatars.com/api/?name={{ member.name }}&background=random" alt="{{ member.name }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                    {{ member.name }}
+                                </div>
+                            </td>
+                            <td>{{ member.email }}</td>
+                            <td>{{ member.phone }}</td>
+                            <td>{{ member.joined_date|date:"M d, Y" }}</td>
+                            <td>
+                                <button class="action-btn edit-btn" onclick="openEditMemberModal('{{ member.id }}', '{{ member.name|escapejs }}', '{{ member.email|escapejs }}', '{{ member.phone|escapejs }}', '{{ member.address|escapejs }}')" style="margin-right: 5px;">✎</button>
+                                <form method="POST" action="{% url 'delete_member' %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="member_id" value="{{ member.id }}">
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this member?')">🗑</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px; color: #666;">No members found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="publishers" class="page">
+            <div class="page-header">
+                <h1>Publishers Management</h1>
+                <button class="btn-primary" onclick="openAddPublisherModal()">+ Add New Publisher</button>
+            </div>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="text" id="publisherSearch" onkeyup="filterGrid('publisherSearch', 'book-card', 'publisherSearchClear')" placeholder="Search publishers..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                <button class="btn-primary" onclick="filterGrid('publisherSearch', 'book-card', 'publisherSearchClear')" style="padding: 12px 25px;">Search</button>
+                <button id="publisherSearchClear" class="btn-primary" onclick="clearSearch('publisherSearch', 'book-card', 'grid', 'publisherSearchClear')" style="padding: 12px 25px; background-color: #6c757d; display: none;">Clear</button>
+            </div>
+            <div class="books-grid">
+                {% for publisher in publishers %}
+                <div class="book-card" onclick="openPublisherModal(this)" data-name="{{ publisher.name }}" style="padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; cursor: pointer;">
+                    <h3 style="text-align: center;">{{ publisher.name }}</h3>
+                    <p style="margin-top: 10px; color: #666;">{{ publisher.book_set.count }} Books</p>
+                    
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditPublisherModal('{{ publisher.id }}', '{{ publisher.name|escapejs }}')">✎</button>
+                        <form method="POST" action="{% url 'delete_publisher' %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this publisher?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="publisher_id" value="{{ publisher.id }}">
+                            <button type="submit" class="action-btn delete-btn" onclick="event.stopPropagation();">🗑</button>
+                        </form>
+                    </div>
+
+                    <!-- Hidden Data for Modal -->
+                    <div class="publisher-books-data" style="display: none;">
+                        {% for book in publisher.book_set.all %}
+                        <div class="modal-book-item">
+                            <span class="modal-book-icon">📖</span>
+                            <div>
+                                <strong>{{ book.title }}</strong>
+                                <br><span style="font-size: 0.9em; color: #666;">by {{ book.author.name }}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="modal-book-item">No books linked to this publisher.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% empty %}
+                <p style="grid-column: 1/-1; text-align: center;">No publishers found.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- <div id="roles" class="page">
+            <h1>Roles & Permissions</h1>
+            <p>Configure user roles and access permissions.</p>
+        </div>
+    </div> -->
+
+    <!-- Author Bio Modal -->
+    <div id="authorBioModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAuthorModal()">&times;</span>
+            <h2 id="modalAuthorName" style="margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Author Name</h2>
+            <div id="modalAuthorBio" style="line-height: 1.6; color: #333; font-size: 16px;">
+                <!-- Bio will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Author Modal -->
+    <div id="addAuthorModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAddAuthorModal()">&times;</span>
+            <h2>Add New Author</h2>
+            <form id="addAuthorForm" method="POST" action="/add_author/" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="setting-item">
+                    <label>Name of the Author</label>
+                    <input type="text" name="name" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Bio of the Author</label>
+                    <textarea name="bio" rows="5" class="setting-input" style="width: 100%; font-family: inherit; padding: 10px;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Author</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Author Modal -->
+    <div id="editAuthorModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditAuthorModal()">&times;</span>
+            <h2>Edit Author</h2>
+            <form method="POST" action="/edit_author/" id="editAuthorForm" style="margin-top: 20px;">
+                {% csrf_token %}
+                <input type="hidden" id="editAuthorId" name="id">
+                <div class="setting-item">
+                    <label>Name of the Author</label>
+                    <input type="text" id="editAuthorName" name="name" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Bio of the Author</label>
+                    <textarea id="editAuthorBio" name="bio" rows="5" class="setting-input" style="width: 100%; font-family: inherit; padding: 10px;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Author</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Book Modal -->
+    <div id="addBookModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAddBookModal()">&times;</span>
+            <h2>Add New Book</h2>
+            <form id="addBookForm" method="POST" action="{% url 'add_book' %}" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="setting-item">
+                    <label>Book Title</label>
+                    <input type="text" name="title" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Author</label>
+                    <select name="author" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                        <option value="">Select Author</option>
+                        {% for author in authors %}
+                        <option value="{{ author.id }}">{{ author.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Publisher</label>
+                    <select name="publisher" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                        <option value="">Select Publisher</option>
+                        {% for publisher in publishers %}
+                        <option value="{{ publisher.id }}">{{ publisher.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>ISBN</label>
+                    <input type="text" name="isbn" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;"><label>Total Quantity</label><input type="number" name="total_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                    <div style="flex: 1;"><label>Available Quantity</label><input type="number" name="available_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                </div>
+                <div class="setting-item"><label>Image URL</label><input type="url" name="image_url" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Book</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Book Modal -->
+    <div id="editBookModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditBookModal()">&times;</span>
+            <h2>Edit Book</h2>
+            <form method="POST" action="/edit_book/" id="editBookForm" style="margin-top: 20px;">
+                {% csrf_token %}
+                <input type="hidden" id="editBookId" name="book_id">
+                <div class="setting-item">
+                    <label>Book Title</label>
+                    <input type="text" id="editBookTitle" name="title" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Author</label>
+                    <select id="editBookAuthor" name="author" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                        <option value="">Select Author</option>
+                        {% for author in authors %}
+                        <option value="{{ author.id }}">{{ author.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>ISBN</label>
+                    <input type="text" id="editBookIsbn" name="isbn" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;"><label>Total Quantity</label><input type="number" id="editBookTotalQty" name="total_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                    <div style="flex: 1;"><label>Available Quantity</label><input type="number" id="editBookAvailQty" name="available_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                </div>
+                <div class="setting-item"><label>Image URL</label><input type="url" id="editBookImage" name="image_url" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Book</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Publisher Modal -->
+    <div id="addPublisherModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAddPublisherModal()">&times;</span>
+            <h2>Add New Publisher</h2>
+            <form id="addPublisherForm" method="POST" action="/add_publisher/" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="setting-item">
+                    <label>Publisher Name</label>
+                    <input type="text" name="name" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Publisher</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Publisher Modal -->
+    <div id="editPublisherModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditPublisherModal()">&times;</span>
+            <h2>Edit Publisher</h2>
+            <form method="POST" action="{% url 'edit_publisher' %}" style="margin-top: 20px;">
+                {% csrf_token %}
+                <input type="hidden" id="editPublisherId" name="id">
+                <div class="setting-item">
+                    <label>Publisher Name</label>
+                    <input type="text" id="editPublisherName" name="name" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Publisher</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAddUserModal()">&times;</span>
+            <h2>Add New User</h2>
+            <form method="POST" action="/add_user/" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="setting-item">
+                    <label>Username</label>
+                    <input type="text" name="username" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Email</label>
+                    <input type="email" name="email" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Password</label>
+                    <input type="password" name="password" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Role</label>
+                    <select name="is_superuser" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                        <option value="False">Member</option>
+                        <option value="True">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Create User</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditUserModal()">&times;</span>
+            <h2>Edit User</h2>
+            <form method="POST" action="{% url 'edit_user' %}" style="margin-top: 20px;">
+                {% csrf_token %}
+                <input type="hidden" id="editUserId" name="user_id">
+                <div class="setting-item">
+                    <label>Username</label>
+                    <input type="text" id="editUserUsername" name="username" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Email</label>
+                    <input type="email" id="editUserEmail" name="email" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>New Password (leave blank to keep current)</label>
+                    <input type="password" name="password" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Role</label>
+                    <select id="editUserRole" name="is_superuser" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                        <option value="False">Member</option>
+                        <option value="True">Admin</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Status</label>
+                    <select id="editUserStatus" name="is_active" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                        <option value="True">Active</option>
+                        <option value="False">Inactive</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update User</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Penalty Modal -->
+    <div id="addPenaltyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAddPenaltyModal()">&times;</span>
+            <h2>Add Penalty</h2>
+            <form method="POST" action="/add_penalty/" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="setting-item">
+                    <label>Member</label>
+                    <select name="member" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                        <option value="">Select Member</option>
+                        {% for member in members %}
+                        <option value="{{ member.id }}">{{ member.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Book Title</label>
+                    <input type="text" name="book_title" list="bookList" required class="setting-input" placeholder="Enter book title" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <datalist id="bookList">
+                        {% for b in books %}
+                        <option value="{{ b.title }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="setting-item">
+                    <label>Amount (₹)</label>
+                    <input type="number" name="amount" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Penalty</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div id="addMemberModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAddMemberModal()">&times;</span>
+            <h2>Add New Member</h2>
+            <form method="POST" action="/add_member/" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="setting-item">
+                    <label>Name</label>
+                    <input type="text" name="name" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Email</label>
+                    <input type="email" name="email" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Phone</label>
+                    <input type="text" name="phone" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Address</label>
+                    <textarea name="address" rows="3" class="setting-input" style="width: 100%; font-family: inherit; padding: 10px;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Member</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Member Modal -->
+    <div id="editMemberModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditMemberModal()">&times;</span>
+            <h2>Edit Member</h2>
+            <form method="POST" action="{% url 'edit_member' %}" style="margin-top: 20px;">
+                {% csrf_token %}
+                <input type="hidden" id="editMemberId" name="member_id">
+                <div class="setting-item">
+                    <label>Name</label>
+                    <input type="text" id="editMemberName" name="name" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Email</label>
+                    <input type="email" id="editMemberEmail" name="email" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Phone</label>
+                    <input type="text" id="editMemberPhone" name="phone" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <div class="setting-item">
+                    <label>Address</label>
+                    <textarea id="editMemberAddress" name="address" rows="3" class="setting-input" style="width: 100%; font-family: inherit; padding: 10px;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Member</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Issue Book Modal -->
+    <div id="issueBookModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeIssueBookModal()">&times;</span>
+            <h2>Issue Book</h2>
+            <form method="POST" action="{% url 'issue_book' %}" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="setting-item">
+                    <label>Member</label>
+                    <select name="member" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                        <option value="">Select Member</option>
+                        {% for member in members %}
+                        <option value="{{ member.id }}">{{ member.name }}</option>
+                        {% empty %}
+                        <option value="" disabled>No members found. Please add a member first.</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Book</label>
+                    <select name="book" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                        <option value="">Select Book</option>
+                        {% for book in books %}
+                            {% if book.available_quantity > 0 %}
+                            <option value="{{ book.id }}">{{ book.title }} (Qty: {{ book.available_quantity }})</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Issue Date</label>
+                    <input type="date" name="issue_date" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Issue Book</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'admin_script.js' %}?v=1.3"></script>
+
+    {% if search_query %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showPage('books');
+        });
+    </script>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Library Uses Chart
+            const ctx = document.getElementById('usageChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ chart_labels|safe }},
+                        datasets: [{
+                            label: 'Members',
+                            data: {{ member_counts|safe }},
+                            borderColor: '#4A90E2', // Blue
+                            backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Issues',
+                            data: {{ issue_counts|safe }},
+                            borderColor: '#50E3C2', // Teal/Green
+                            backgroundColor: 'rgba(80, 227, 194, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false // Using custom HTML legend
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    borderDash: [5, 5]
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Revenue Chart
+            const ctxRevenue = document.getElementById('revenueChart');
+            if (ctxRevenue) {
+                new Chart(ctxRevenue, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ chart_labels|safe }},
+                        datasets: [{
+                            label: 'Revenue (₹)',
+                            data: {{ revenue_data|safe }},
+                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    {% if search_query %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showPage('books');
+        });
+    </script>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for tab parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab) {
+                showPage(tab);
+            }
+        });
+    </script>
+
+    <script>
+        function filterTable(inputId, tableBodyId, clearBtnId) {
+            const input = document.getElementById(inputId);
+            const filter = input.value.toLowerCase();
+            const tbody = document.getElementById(tableBodyId);
+            const rows = tbody.getElementsByTagName('tr');
+
+            if (clearBtnId) {
+                const clearBtn = document.getElementById(clearBtnId);
+                if (input.value.length > 0) {
+                    clearBtn.style.display = 'block';
+                } else {
+                    clearBtn.style.display = 'none';
+                }
+            }
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const text = row.textContent || row.innerText;
+                if (text.toLowerCase().indexOf(filter) > -1) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            }
+        }
+
+        function filterGrid(inputId, itemClass, clearBtnId) {
+            const input = document.getElementById(inputId);
+            const filter = input.value.toLowerCase();
+            const items = document.getElementsByClassName(itemClass);
+
+            if (clearBtnId) {
+                const clearBtn = document.getElementById(clearBtnId);
+                if (input.value.length > 0) {
+                    clearBtn.style.display = 'block';
+                } else {
+                    clearBtn.style.display = 'none';
+                }
+            }
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const text = item.textContent || item.innerText;
+                if (text.toLowerCase().indexOf(filter) > -1) {
+                    item.style.display = "flex";
+                } else {
+                    item.style.display = "none";
+                }
+            }
+        }
+
+        function clearSearch(inputId, targetId, type, clearBtnId) {
+            document.getElementById(inputId).value = '';
+            if (type === 'table') {
+                filterTable(inputId, targetId, clearBtnId);
+            } else if (type === 'grid') {
+                filterGrid(inputId, targetId, clearBtnId);
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -9,7 +9,18 @@ from django.db import connection
 from django.core.management.color import no_style
 from datetime import date, datetime, timedelta
 import json
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
+from django.http import FileResponse
+import io
+try:
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
+    HAS_REPORTLAB = True
+except ImportError:
+    HAS_REPORTLAB = False
 
 def get_library_settings():
     settings_obj = LibrarySettings.objects.first()
@@ -59,7 +70,73 @@ def admin_register(request):
                 return redirect('admin_login')
     return render(request, 'admin_register.html')
 
+def generate_circulation_report(request):
+    if not HAS_REPORTLAB:
+        return HttpResponse("The 'reportlab' library is missing. Please install it using: pip install reportlab")
+
+    # Filter logic (mirrors admin_dashboard)
+    circ_search = request.GET.get('circ_search', '')
+    circ_status = request.GET.get('circ_status', '')
+    circ_sort = request.GET.get('circ_sort') or '-issue_date'
+
+    circulations = Circulation.objects.all()
+
+    if circ_search:
+        circulations = circulations.filter(Q(member__name__icontains=circ_search) | Q(book__title__icontains=circ_search))
+    
+    if circ_status:
+        if circ_status == 'overdue':
+            circulations = circulations.filter(status='issued', due_date__lt=date.today())
+        else:
+            circulations = circulations.filter(status=circ_status)
+
+    circulations = circulations.order_by(circ_sort, '-id')
+
+    # Create PDF
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+    
+    styles = getSampleStyleSheet()
+    elements.append(Paragraph("Circulation Report", styles['Title']))
+    elements.append(Spacer(1, 12))
+    
+    data = [['Member', 'Book', 'Issue Date', 'Due Date', 'Return Date', 'Status', 'Fine']]
+    
+    for circ in circulations:
+        fine = f"{circ.fine_amount}" if circ.fine_amount else "-"
+        return_date = circ.return_date.strftime('%Y-%m-%d') if circ.return_date else "-"
+        data.append([
+            circ.member.name,
+            circ.book.title,
+            circ.issue_date.strftime('%Y-%m-%d'),
+            circ.due_date.strftime('%Y-%m-%d'),
+            return_date,
+            circ.status.title(),
+            fine
+        ])
+        
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename='circulation_report.pdf')
+
 def admin_dashboard(request):
+    if request.GET.get('action') == 'generate_report':
+        return generate_circulation_report(request)
+
     if request.method == 'POST' and 'notification_action' in request.POST:
         action = request.POST.get('notification_action')
         if action == 'clear':
@@ -73,6 +150,24 @@ def admin_dashboard(request):
     
     if search_query:
         books = books.filter(title__icontains=search_query)
+
+    # Filter and Sort Circulations
+    circ_search = request.GET.get('circ_search', '')
+    circ_status = request.GET.get('circ_status', '')
+    circ_sort = request.GET.get('circ_sort') or '-issue_date'
+
+    circulations = Circulation.objects.all()
+
+    if circ_search:
+        circulations = circulations.filter(Q(member__name__icontains=circ_search) | Q(book__title__icontains=circ_search))
+    
+    if circ_status:
+        if circ_status == 'overdue':
+            circulations = circulations.filter(status='issued', due_date__lt=date.today())
+        else:
+            circulations = circulations.filter(status=circ_status)
+
+    circulations = circulations.order_by(circ_sort, '-id')
 
     # Calculate statistics for dashboard
     total_members = Member.objects.count()
@@ -138,7 +233,8 @@ def admin_dashboard(request):
         'publishers': Publisher.objects.all().order_by('name'),
         'members': Member.objects.all().order_by('-id'),
         'users': User.objects.all().order_by('-id'),
-        'circulations': Circulation.objects.all().order_by('-issue_date', '-id'),
+        'circulations': circulations,
+        'recent_issued': Circulation.objects.filter(status='issued').order_by('-issue_date')[:5],
         'penalties': Penalty.objects.all(),
         'lib_settings': get_library_settings(),
         'notifications': notifications,
@@ -358,7 +454,7 @@ def return_book(request):
                 circulation.fine_amount = fine_amount
                 
                 # Create a penalty record
-                Penalty.objects.create(member=circulation.member, book=circulation.book, due_date=circulation.due_date, days_overdue=overdue_days, amount=fine_amount, reason=f"Overdue: {circulation.book.title}", status='Paid')
+                Penalty.objects.create(member=circulation.member, book=circulation.book, due_date=circulation.due_date, days_overdue=overdue_days, amount=fine_amount, reason=f"Overdue: {circulation.book.title}", status='unpaid')
                 add_notification(f"Book '{book.title}' returned overdue by {circulation.member.name}. Penalty: {fine_amount}")
             else:
                 add_notification(f"Book '{book.title}' returned by {circulation.member.name}")

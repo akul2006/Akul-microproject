@@ -6,3 +6,4 @@ Psycopg2-binary
 Django-extensions
 Django-crispy-forms
 Django-filter
+Reportlab

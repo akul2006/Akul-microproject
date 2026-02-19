@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKUL - Smart Library Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica', sans-serif;
+            background: #f0f4f8;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .poster-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Header Section */
+        .header {
+            background: linear-gradient(135deg, #003d82 0%, #43a047 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: -5%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            position: relative;
+            z-index: 1;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        /* Top Section - Problem, Solution, Benefits */
+        .top-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 30px 40px;
+            background: #f8f9fa;
+        }
+
+        .top-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .top-card h3 {
+            display: flex;
+            align-items: center;
+            font-size: 1.2em;
+            margin-bottom: 18px;
+            color: #003d82;
+            gap: 10px;
+        }
+
+        .top-card ul {
+            list-style: none;
+        }
+
+        .top-card li {
+            font-size: 0.92em;
+            color: #555;
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .top-card li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #0051a5;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Why This Matters Section */
+        .why-section {
+            background: linear-gradient(135deg, #003d82 0%, #43a047 100%);
+            color: white;
+            padding: 25px 40px;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .why-section h3 {
+            grid-column: 1 / -1;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .why-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 0.95em;
+        }
+
+        .why-item::before {
+            content: '✓';
+            flex-shrink: 0;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #ffd700;
+        }
+
+        /* Main Grid Section */
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 30px 40px;
+            background: white;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-top: 4px solid #0051a5;
+        }
+
+        .card h3 {
+            font-size: 1.15em;
+            color: #003d82;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card ul {
+            list-style: none;
+        }
+
+        .card li {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .card li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #0051a5;
+            font-weight: bold;
+        }
+
+        .card p {
+            font-size: 0.9em;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        /* Tech Stack Section */
+        .tech-section {
+            padding: 30px 40px;
+            background: #f8f9fa;
+        }
+
+        .tech-section h3 {
+            font-size: 1.2em;
+            color: #003d82;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tech-badges {
+            display: flex;
+            width: 100%;
+            gap: 12px;
+        }
+
+        .tech-badge {
+            background: #333;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            gap: 5px;
+        }
+
+        .tech-badge:nth-child(2) { background: #0051a5; }
+        .tech-badge:nth-child(3) { background: #0088cc; }
+        .tech-badge:nth-child(4) { background: #667eea; }
+        .tech-badge:nth-child(5) { background: #f0a500; }
+        .tech-badge:nth-child(6) { background: #43a047; }
+
+        /* Group Members Section */
+        .members-section {
+            background: linear-gradient(135deg, #003d82 0%, #43a047 100%);
+            color: white;
+            padding: 30px 40px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .members-info h3 {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .members-list {
+            font-size: 0.95em;
+            line-height: 1.8;
+        }
+
+        .members-list strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .members-separator {
+            width: 1px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .guide-info {
+            text-align: right;
+        }
+
+        .guide-info h3 {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* References & Guide Section */
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px 40px;
+            background: #f8f9fa;
+        }
+
+        .ref-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-top: 4px solid #0051a5;
+        }
+
+        .ref-card h3 {
+            font-size: 1.15em;
+            color: #003d82;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ref-list {
+            list-style: none;
+        }
+
+        .ref-list li {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .ref-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #0051a5;
+            font-weight: bold;
+        }
+
+        .guide-card {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .guide-card h3 {
+            margin-bottom: 25px;
+        }
+
+        .guide-name {
+            font-size: 1.3em;
+            color: #003d82;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .guide-subtitle {
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .top-section,
+            .main-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 2.2em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-section,
+            .main-grid,
+            .why-section,
+            .members-section,
+            .bottom-section {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .poster-container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .top-section,
+            .main-grid,
+            .tech-section,
+            .members-section,
+            .bottom-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="poster-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>BookSphere</h1>
+            <p>Smart Library Management System</p>
+            <p style="font-size: 0.95em; margin-top: 8px;">A Comprehensive Solution for Efficient Library Operations</p>
+        </div>
+
+        <!-- Top Section: Problem, Solution, Benefits -->
+        <div class="top-section">
+            <div class="top-card">
+                <h3>⚠️ Problem Statement</h3>
+                <ul>
+                    <li>Manual book tracking & inventory</li>
+                    <li>Time-consuming member services</li>
+                    <li>Inefficient fine calculation</li>
+                    <li>No overdue book notifications</li>
+                    <li>Limited circulation control</li>
+                </ul>
+            </div>
+
+            <div class="top-card">
+                <h3>💡 Solution</h3>
+                <ul>
+                    <li>Automated library management system</li>
+                    <li>Real-time book inventory tracking</li>
+                    <li>Instant circulation management</li>
+                    <li>Automated penalty calculations</li>
+                    <li>Smart notification system</li>
+                </ul>
+            </div>
+
+            <div class="top-card">
+                <h3>✅ Benefits</h3>
+                <ul>
+                    <li>50% faster operations</li>
+                    <li>Accurate inventory management</li>
+                    <li>Enhanced member experience</li>
+                    <li>Scalable solution</li>
+                    <li>Cost-effective system</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Why This Matters Section -->
+        <div class="why-section">
+            <h3>⭐ Why This Project Matters</h3>
+            <div class="why-item">Eliminates manual record-keeping errors</div>
+            <div class="why-item">Centralizes all library operations</div>
+            <div class="why-item">Improves member satisfaction significantly</div>
+            <div class="why-item">Enables data-driven decisions</div>
+        </div>
+
+        <!-- Main Grid: Features, Methodology, Applications -->
+        <div class="main-grid">
+            <div class="card">
+                <h3>⚙️ Features</h3>
+                <ul>
+                    <li>Complete book inventory management</li>
+                    <li>Member registration & tracking</li>
+                    <li>Issue/return circulation system</li>
+                    <li>Automatic fine calculation</li>
+                    <li>Overdue notifications</li>
+                    <li>Admin dashboard</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>🔍 Methodology</h3>
+                <ul>
+                    <li>Django's MTV architecture</li>
+                    <li>PostgreSQL database design</li>
+                    <li>Modular code structure</li>
+                    <li>Mobile-responsive UI</li>
+                    <li>Secure authentication</li>
+                    <li>Comprehensive testing</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>📱 Applications</h3>
+                <ul>
+                    <li>Educational institutions</li>
+                    <li>Public libraries</li>
+                    <li>School libraries</li>
+                    <li>Corporate libraries</li>
+                    <li>Community centers</li>
+                    <li>Research facilities</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>🚀 Future Scope</h3>
+                <ul>
+                    <li>Mobile app development</li>
+                    <li>AI recommendation engine</li>
+                    <li>RFID tag integration</li>
+                    <li>Report Generation</li>
+                    <li>E-book management</li>
+                    <li>QR Code integration</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>⚠️ Limitations</h3>
+                <ul>
+                    <li>Requires internet connectivity</li>
+                    <li>Initial setup complexity</li>
+                    <li>Staff training required</li>
+                    <li>Limited mobile interface</li>
+                    <li>Legacy system integration</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>📖 Artifacts/Deliverables</h3>
+                <ul>
+                    <li>Complete Django application</li>
+                    <li>Database schema & migrations</li>
+                    <li>Admin UI templates</li>
+                    <li>API documentation</li>
+                    <li>User guides & manuals</li>
+                    <li>Test reports</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tech Stack Section -->
+        <div class="tech-section">
+            <h3>🛠️ Technologies Used</h3>
+            <div class="tech-badges">
+                <div class="tech-badge">Django</div>
+                <div class="tech-badge">Python</div>
+                <div class="tech-badge">PostgreSQL</div>
+                <div class="tech-badge">HTML</div>
+                <div class="tech-badge">CSS</div>
+                <div class="tech-badge">JavaScript</div>
+                <div class="tech-badge">ReportLab</div>
+            </div>
+        </div>
+
+        <!-- Group Members Section -->
+        <div class="members-section">
+            <div class="members-info">
+                <h3>👥 Group Members</h3>
+                <div class="members-list">
+                    <strong>Akul Sharma &nbsp;|&nbsp;Apurv Gosai &nbsp;|&nbsp;Anchal Raut &nbsp;|&nbsp;Krithi Shetty</strong>
+                    Team Members • Collaborators
+                </div>
+            </div>
+            <div class="members-separator"></div>
+            <div class="guide-info">
+                <h3>👨‍🏫 Guide</h3>
+                <div class="members-list">
+                    <strong>Prof. Sabir Bagwan</strong>
+                    RTMSSU - Micro Project - Sem 2
+                </div>
+            </div>
+        </div>
+
+        <!-- References & Guide Section -->
+        <div class="bottom-section">
+            <div class="ref-card">
+                <h3>📚 References</h3>
+                <ul class="ref-list">
+                    <li>Django official documentation</li>
+                    <li>PostgreSQL documentation</li>
+                    <li>Python best practices</li>
+                    <li>Web security standards (OWASP)</li>
+                    <li>Database design principles</li>
+                </ul>
+            </div>
+
+            <div class="ref-card guide-card">
+                <h3> Project Gallery</h3>
+                <div style="width: 100%; height: 180px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px dashed #ccc;">
+                    <span><img src="C:\Users\sharm\Pictures\Screenshots\Screenshot 2026-02-19 201650.png" alt="Project Gallery" style="max-width: 100%; max-height: 100%;"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

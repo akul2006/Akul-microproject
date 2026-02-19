@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Management System - Admin</title>
+    <title>BookSphere</title>
     <link rel="stylesheet" href="{% static 'admin_styles.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -142,7 +142,7 @@
             <div class="header-left">
                 <div class="header-icon">ℹ️</div>
                 <div class="header-text">
-                    <h1>Library Management System</h1>
+                    <h1>BookSphere</h1>
                     <p>Welcome, {{ user.username }}</p>
                 </div>
             </div>
@@ -280,7 +280,7 @@
                         </div>
                     </div>
 
-                    <!-- Revenue/Penalty Chart -->
+                    <!-- Revenue/Penalty Chart
                     <div class="chart-container" style="position: relative; width: 100%;">
                         <div class="chart-header">
                             <h2>Revenue</h2>
@@ -293,17 +293,12 @@
                         <div style="position: relative; height: 300px; width: 100%;">
                             <canvas id="revenueChart"></canvas>
                         </div>
-                    </div>
+                    </div> -->
 
-                    <!-- Library Activity Table
+                    <!-- Library Activity Table -->
                     <div class="activity-container">
                         <div class="activity-header">
                             <h2>Library Activity</h2>
-                            <select class="filter-dropdown">
-                                <option>Last Month</option>
-                                <option>Last Week</option>
-                                <option>Today</option>
-                            </select>
                         </div>
                         <table class="activity-table">
                             <thead>
@@ -316,10 +311,46 @@
                                 </tr>
                             </thead>
                             <tbody id="activityTableBody">
-                                Dynamic content
+                                {% for circ in circulations|slice:":5" %}
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <span style="font-size: 1.2em;">📖</span>
+                                            <div>
+                                                <strong>{{ circ.book.title }}</strong>
+                                                <br><span style="font-size: 0.8em; color: #666;">{{ circ.book.author.name }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <img src="https://ui-avatars.com/api/?name={{ circ.member.name }}&background=random" alt="{{ circ.member.name }}" style="width: 24px; height: 24px; border-radius: 50%;">
+                                            <span>{{ circ.member.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="font-size: 0.9em;">
+                                            <div>Issue: {{ circ.issue_date|date:"M d" }}</div>
+                                            <div style="color: #666;">Due: {{ circ.due_date|date:"M d" }}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {{ circ.return_date|date:"M d"|default:"-" }}
+                                    </td>
+                                    <td>
+                                        <span class="status-badge {% if circ.status == 'issued' %}active{% else %}returned{% endif %}">
+                                            {{ circ.status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 20px; color: #666;">No recent activity.</td>
+                                </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
-                    </div> -->
+                    </div>
                 </div>
 
                 <!-- Right Sidebar -->
@@ -651,8 +682,39 @@
         <div id="circulations" class="page">
             <div class="page-header">
                 <h1>Books Circulation</h1>
-                <button class="btn-primary" onclick="openIssueBookModal()">+ Issue Book</button>
+                <div style="display: flex; gap: 10px;">
+                    <a href="?tab=circulations&action=generate_report&circ_search={{ request.GET.circ_search|default:'' }}&circ_status={{ request.GET.circ_status|default:'' }}&circ_sort={{ request.GET.circ_sort|default:'' }}" class="btn-primary" style="background-color: #6c757d; text-decoration: none; display: flex; align-items: center; justify-content: center;">Generate Report</a>
+                    <button class="btn-primary" onclick="openIssueBookModal()">+ Issue Book</button>
+                </div>
             </div>
+            
+            <div class="filter-bar" style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <form method="GET" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="hidden" name="tab" value="circulations">
+                    
+                    <input type="text" name="circ_search" value="{{ request.GET.circ_search|default:'' }}" placeholder="Search Member or Book..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; min-width: 200px;">
+                    
+                    <select name="circ_status" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">All Status</option>
+                        <option value="issued" {% if request.GET.circ_status == 'issued' %}selected{% endif %}>Issued</option>
+                        <option value="returned" {% if request.GET.circ_status == 'returned' %}selected{% endif %}>Returned</option>
+                        <option value="overdue" {% if request.GET.circ_status == 'overdue' %}selected{% endif %}>Overdue</option>
+                    </select>
+
+                    <select name="circ_sort" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="-issue_date" {% if request.GET.circ_sort == '-issue_date' %}selected{% endif %}>Newest Issued</option>
+                        <option value="issue_date" {% if request.GET.circ_sort == 'issue_date' %}selected{% endif %}>Oldest Issued</option>
+                        <option value="due_date" {% if request.GET.circ_sort == 'due_date' %}selected{% endif %}>Due Date (Earliest)</option>
+                        <option value="-due_date" {% if request.GET.circ_sort == '-due_date' %}selected{% endif %}>Due Date (Latest)</option>
+                    </select>
+                    
+                    <button type="submit" class="btn-primary" style="padding: 10px 20px;">Filter</button>
+                    {% if request.GET.circ_search or request.GET.circ_status or request.GET.circ_sort %}
+                    <a href="{% url 'admin_dashboard' %}?tab=circulations" class="btn-primary" style="background-color: #6c757d; text-decoration: none; padding: 10px 20px; display: flex; align-items: center;">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
             <div class="users-table-container">
                 <table class="data-table">
                     <thead>

@@ -957,3 +957,80 @@ body {
     margin-right: 10px;
     font-size: 1.2em;
 }
+
+body.dark-theme {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-theme .sidebar {
+    background-color: #1e1e1e;
+    border-right: 1px solid #333;
+}
+
+body.dark-theme .main-content {
+    background-color: #121212;
+}
+
+body.dark-theme .top-header {
+    background-color: #1e1e1e;
+    border-bottom: 1px solid #333;
+}
+
+body.dark-theme .stat-card,
+body.dark-theme .chart-container,
+body.dark-theme .activity-container,
+body.dark-theme .issued-books-section,
+body.dark-theme .top-authors-section,
+body.dark-theme .users-table-container,
+body.dark-theme .penalties-table-container,
+body.dark-theme .settings-content,
+body.dark-theme .book-card,
+body.dark-theme .filter-bar {
+    background-color: #1e1e1e;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    color: #e0e0e0;
+    border: 1px solid #333;
+}
+
+body.dark-theme .data-table th {
+    background-color: #2c2c2c;
+    color: #fff;
+    border-bottom: 1px solid #444;
+}
+
+body.dark-theme .data-table td {
+    border-bottom: 1px solid #333;
+    color: #ccc;
+}
+
+body.dark-theme .nav-link {
+    color: #bbb;
+}
+
+body.dark-theme .nav-link:hover,
+body.dark-theme .nav-link.active {
+    background-color: #333;
+    color: #fff;
+}
+
+body.dark-theme .setting-input,
+body.dark-theme select,
+body.dark-theme input {
+    background-color: #2c2c2c;
+    border: 1px solid #444;
+    color: #fff;
+}
+
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4 {
+    color: #fff;
+}
+
+body.dark-theme .modal-content {
+    background-color: #1e1e1e;
+    border: 1px solid #444;
+    color: #e0e0e0;
+}

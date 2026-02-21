@@ -16,8 +16,8 @@ try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import letter
     from reportlab.lib import colors
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     HAS_REPORTLAB = True
 except ImportError:
     HAS_REPORTLAB = False
@@ -46,6 +46,7 @@ def add_notification(message):
 # Create your views here.
 
 def admin_login(request):
+    dark_mode = request.COOKIES.get('dark_mode')
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -54,10 +55,11 @@ def admin_login(request):
             login(request, user)
             return redirect('admin_dashboard')
         else:
-            return render(request, 'admin_login.html', {'error': 'Invalid credentials'})
-    return render(request, 'admin_login.html')
+            return render(request, 'admin_login.html', {'error': 'Invalid credentials', 'dark_mode': dark_mode})
+    return render(request, 'admin_login.html', {'dark_mode': dark_mode})
 
 def admin_register(request):
+    dark_mode = request.COOKIES.get('dark_mode')
     if request.method == 'POST':
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -68,7 +70,7 @@ def admin_register(request):
             if not User.objects.filter(username=username).exists():
                 User.objects.create_user(username=username, email=email, password=password)
                 return redirect('admin_login')
-    return render(request, 'admin_register.html')
+    return render(request, 'admin_register.html', {'dark_mode': dark_mode})
 
 def generate_circulation_report(request):
     if not HAS_REPORTLAB:
@@ -92,42 +94,113 @@ def generate_circulation_report(request):
 
     circulations = circulations.order_by(circ_sort, '-id')
 
-    # Create PDF
+    total_titles = Book.objects.count()
+    total_copies = Book.objects.aggregate(Sum('quantity'))['quantity__sum'] or 0
+    available_copies = Book.objects.aggregate(Sum('available_quantity'))['available_quantity__sum'] or 0
+    issued_copies = Circulation.objects.filter(status='issued').count()
+
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
     elements = []
     
     styles = getSampleStyleSheet()
-    elements.append(Paragraph("Circulation Report", styles['Title']))
+    title_style = styles['Title']
+    normal_style = styles['Normal']
+    
+    cell_style = ParagraphStyle('CellStyle', parent=normal_style, fontSize=9, leading=11, alignment=0)
+    header_style = ParagraphStyle('HeaderStyle', parent=normal_style, fontSize=10, leading=12, textColor=colors.whitesmoke, fontName='Helvetica-Bold', alignment=1)
+
+    elements.append(Paragraph("Circulation Report", title_style))
     elements.append(Spacer(1, 12))
     
-    data = [['Member', 'Book', 'Issue Date', 'Due Date', 'Return Date', 'Status', 'Fine']]
+    headers = ['Member', 'Book', 'Issue Date', 'Due Date', 'Return Date', 'Status', 'Fine']
+    header_row = [Paragraph(h, header_style) for h in headers]
+    data = [header_row]
     
     for circ in circulations:
         fine = f"{circ.fine_amount}" if circ.fine_amount else "-"
         return_date = circ.return_date.strftime('%Y-%m-%d') if circ.return_date else "-"
-        data.append([
-            circ.member.name,
-            circ.book.title,
-            circ.issue_date.strftime('%Y-%m-%d'),
-            circ.due_date.strftime('%Y-%m-%d'),
-            return_date,
-            circ.status.title(),
-            fine
-        ])
         
-    table = Table(data)
+        row = [
+            Paragraph(circ.member.name, cell_style),
+            Paragraph(circ.book.title, cell_style),
+            Paragraph(circ.issue_date.strftime('%Y-%m-%d'), cell_style),
+            Paragraph(circ.due_date.strftime('%Y-%m-%d'), cell_style),
+            Paragraph(return_date, cell_style),
+            Paragraph(circ.status.title(), cell_style),
+            Paragraph(fine, cell_style)
+        ]
+        data.append(row)
+        
+    col_widths = [100, 150, 65, 65, 65, 60, 40]
+    
+    table = Table(data, colWidths=col_widths, repeatRows=1)
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
     ]))
     
     elements.append(table)
+    
+    elements.append(PageBreak())
+    elements.append(Paragraph("Library Statistics", title_style))
+    elements.append(Spacer(1, 20))
+    
+    stats_data = [
+        [Paragraph("Metric", header_style), Paragraph("Count", header_style)],
+        [Paragraph("Total Book Titles", cell_style), Paragraph(str(total_titles), cell_style)],
+        [Paragraph("Total Physical Books", cell_style), Paragraph(str(total_copies), cell_style)],
+        [Paragraph("Books Available", cell_style), Paragraph(str(available_copies), cell_style)],
+        [Paragraph("Books Issued", cell_style), Paragraph(str(issued_copies), cell_style)],
+    ]
+    
+    stats_table = Table(stats_data, colWidths=[250, 100], hAlign='LEFT')
+    stats_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('PADDING', (0, 0), (-1, -1), 12),
+    ]))
+    
+    elements.append(stats_table)
+    
+    elements.append(PageBreak())
+    elements.append(Paragraph("Book Inventory Details", title_style))
+    elements.append(Spacer(1, 12))
+
+    inv_headers = ['Title', 'Author', 'ISBN', 'Total', 'Avail', 'Issued']
+    inv_header_row = [Paragraph(h, header_style) for h in inv_headers]
+    inv_data = [inv_header_row]
+
+    all_books = Book.objects.all().order_by('title')
+
+    for book in all_books:
+        issued_qty = book.quantity - book.available_quantity
+        row = [
+            Paragraph(book.title, cell_style),
+            Paragraph(book.author.name if book.author else "-", cell_style),
+            Paragraph(book.isbn or "-", cell_style),
+            Paragraph(str(book.quantity), cell_style),
+            Paragraph(str(book.available_quantity), cell_style),
+            Paragraph(str(issued_qty), cell_style),
+        ]
+        inv_data.append(row)
+    
+    inv_col_widths = [200, 120, 82, 50, 50, 50]
+    inv_table = Table(inv_data, colWidths=inv_col_widths, repeatRows=1)
+    inv_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    
+    elements.append(inv_table)
+
     doc.build(elements)
     
     buffer.seek(0)
@@ -151,7 +224,6 @@ def admin_dashboard(request):
     if search_query:
         books = books.filter(title__icontains=search_query)
 
-    # Filter and Sort Circulations
     circ_search = request.GET.get('circ_search', '')
     circ_status = request.GET.get('circ_status', '')
     circ_sort = request.GET.get('circ_sort') or '-issue_date'
@@ -169,7 +241,6 @@ def admin_dashboard(request):
 
     circulations = circulations.order_by(circ_sort, '-id')
 
-    # Calculate statistics for dashboard
     total_members = Member.objects.count()
     issued_books_count = Circulation.objects.filter(status='issued').count()
     reserved_books_count = Book.objects.aggregate(Sum('available_quantity'))['available_quantity__sum'] or 0
@@ -178,7 +249,6 @@ def admin_dashboard(request):
     notifications = get_notifications()
     unread_count = Notification.objects.filter(read=False).count()
 
-    # Chart Data
     chart_range = request.GET.get('chart_range', '6_months')
     chart_labels = []
     issue_counts = []
@@ -191,9 +261,7 @@ def admin_dashboard(request):
             d = today - timedelta(days=i)
             chart_labels.append(d.strftime('%a'))
             issue_counts.append(Circulation.objects.filter(issue_date=d).count())
-            # Using __date for joined_date in case it is DateTimeField, otherwise exact match for DateField
             member_counts.append(Member.objects.filter(joined_date__year=d.year, joined_date__month=d.month, joined_date__day=d.day).count())
-            # Assuming Penalty has created_at
             monthly_revenue = Penalty.objects.filter(created_at__year=d.year, created_at__month=d.month, created_at__day=d.day).aggregate(Sum('amount'))['amount__sum'] or 0
             revenue_data.append(float(monthly_revenue))
     elif chart_range == 'last_year':
@@ -208,7 +276,7 @@ def admin_dashboard(request):
             member_counts.append(Member.objects.filter(joined_date__year=y, joined_date__month=m).count())
             monthly_revenue = Penalty.objects.filter(created_at__year=y, created_at__month=m).aggregate(Sum('amount'))['amount__sum'] or 0
             revenue_data.append(float(monthly_revenue))
-    else: # 6 months (default)
+    else:
         for i in range(5, -1, -1):
             m = today.month - i
             y = today.year
@@ -243,6 +311,7 @@ def admin_dashboard(request):
         'issue_counts': json.dumps(issue_counts),
         'member_counts': json.dumps(member_counts),
         'revenue_data': json.dumps(revenue_data),
+        'dark_mode': request.COOKIES.get('dark_mode'),
     }
     return render(request, 'admin_library.html', context)
 
@@ -285,12 +354,10 @@ def add_book(request):
         except IntegrityError as e:
             if 'pkey' in str(e) or 'PRIMARY' in str(e):
                 try:
-                    # Fix sequence
                     sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Book])
                     with connection.cursor() as cursor:
                         for sql in sequence_sql:
                             cursor.execute(sql)
-                    # Retry creation
                     Book.objects.create(
                         title=title, author=author, publisher=publisher, isbn=isbn,
                         quantity=total_qty, available_quantity=avail_qty,
@@ -581,3 +648,11 @@ def update_settings(request):
         
         add_notification("Settings updated successfully.")
     return redirect(reverse('admin_dashboard') + '?tab=settings')
+
+def toggle_theme(request):
+    current_mode = request.COOKIES.get('dark_mode')
+    new_mode = 'false' if current_mode == 'true' else 'true'
+    referer = request.META.get('HTTP_REFERER')
+    response = redirect(referer) if referer else redirect('admin_dashboard')
+    response.set_cookie('dark_mode', new_mode, max_age=31536000)
+    return response

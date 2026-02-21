@@ -48,7 +48,7 @@
     </style>
 </head>
 
-<body>
+<body class="{% if dark_mode == 'true' %}dark-theme{% endif %}">
     <!-- Sidebar Navigation -->
     <div class="sidebar">
         <div class="logo">
@@ -151,6 +151,9 @@
                     <!-- <input type="text" id="searchInput" placeholder="Search Books">
                     <span class="search-icon">🔍</span> -->
                 </div>
+                <a href="{% url 'toggle_theme' %}" class="notification-icon" style="text-decoration: none; margin-right: 15px; display: flex; align-items: center; justify-content: center;" title="Toggle Dark Mode">
+                    {% if dark_mode == 'true' %}☀️{% else %}🌙{% endif %}
+                </a>
                 <div class="notification-icon" onclick="toggleNotifications()">
                     🔔
                     {% if unread_count > 0 %}

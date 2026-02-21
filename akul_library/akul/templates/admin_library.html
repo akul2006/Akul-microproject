@@ -1336,7 +1336,7 @@
             // Initialize Library Uses Chart
             const ctx = document.getElementById('usageChart');
             if (ctx) {
-                new Chart(ctx, {
+                window.usageChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: {{ chart_labels|safe }},
@@ -1379,6 +1379,9 @@
                         }
                     }
                 });
+                if (document.body.classList.contains('dark-theme')) {
+                    updateChartTheme(true);
+                }
             }
         });
     </script>
@@ -1388,7 +1391,7 @@
             // Initialize Revenue Chart
             const ctxRevenue = document.getElementById('revenueChart');
             if (ctxRevenue) {
-                new Chart(ctxRevenue, {
+                window.revenueChart = new Chart(ctxRevenue, {
                     type: 'bar',
                     data: {
                         labels: {{ chart_labels|safe }},
@@ -1410,6 +1413,9 @@
                         }
                     }
                 });
+                if (document.body.classList.contains('dark-theme')) {
+                    updateChartTheme(true);
+                }
             }
         });
     </script>
@@ -1423,8 +1429,48 @@
     {% endif %}
 
     <script>
+        // Dark Mode Toggle
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark-theme');
+            const isDark = body.classList.contains('dark-theme');
+            localStorage.setItem('dark_mode', isDark);
+            
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.innerText = isDark ? '☀️' : '🌙';
+            }
+            document.cookie = "dark_mode=" + (isDark ? "true" : "false") + "; path=/; max-age=31536000";
+            updateChartTheme(isDark);
+        }
+
+        function updateChartTheme(isDark) {
+            const textColor = isDark ? '#e0e0e0' : '#666';
+            const gridColor = isDark ? '#333' : '#ddd';
+            
+            if (window.usageChart) {
+                window.usageChart.options.scales.x.ticks.color = textColor;
+                window.usageChart.options.scales.y.ticks.color = textColor;
+                window.usageChart.options.scales.y.grid.color = gridColor;
+                window.usageChart.update();
+            }
+            if (window.revenueChart) {
+                window.revenueChart.options.scales.x.ticks.color = textColor;
+                window.revenueChart.options.scales.y.ticks.color = textColor;
+                window.revenueChart.options.scales.y.grid.color = gridColor;
+                window.revenueChart.update();
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Check for tab parameter in URL
+            // Check saved theme
+            const savedTheme = localStorage.getItem('dark_mode');
+            if (savedTheme === 'true') {
+                document.body.classList.add('dark-theme');
+                const icon = document.getElementById('theme-icon');
+                if (icon) icon.innerText = '☀️';
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const tab = urlParams.get('tab');
             if (tab) {

@@ -957,3 +957,8 @@ body {
     margin-right: 10px;
     font-size: 1.2em;
 }
+
+body.dark-theme { background-color: #121212; color: #fff; }
+    body.dark-theme .card { background-color: #1e1e1e; color: #fff; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+    body.dark-theme .inputBox input { color: #fff; border-bottom: 1px solid #fff; }
+    body.dark-theme .inputBox span { color: #bbb; }

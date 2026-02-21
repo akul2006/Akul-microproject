@@ -28,4 +28,5 @@ urlpatterns = [
     path('edit_member/', views.edit_member, name='edit_member'),
     path('delete_member/', views.delete_member, name='delete_member'),
     path('update_settings/', views.update_settings, name='update_settings'),
+    path('toggle_theme/', views.toggle_theme, name='toggle_theme'),
     ]

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BookSphere</title>
     <link rel="stylesheet" href="{% static 'admin_styles.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'img/logo.ico' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Modal Styles */
@@ -52,8 +53,7 @@
     <!-- Sidebar Navigation -->
     <div class="sidebar">
         <div class="logo">
-            <div class="logo-icon">📚</div>
-            <h2>Library Advisor</h2>
+            <img src="{% static 'img/logo2.png' %}" alt="BookSphere Logo" style="width: 200px; height: auto; display: block; margin: 0; margin-top: 0; margin-bottom: 0; padding: 0px;">
         </div>
         
         <nav class="nav-menu">
@@ -140,7 +140,9 @@
         <!-- Top Header -->
         <header class="top-header">
             <div class="header-left">
-                <div class="header-icon">ℹ️</div>
+                <div class="header-icon">
+                    <img src="{% static 'img/logo.ico' %}" alt="Logo" style="width:58px; height: auto;">
+                </div>
                 <div class="header-text">
                     <h1>BookSphere</h1>
                     <p>Welcome, {{ user.username }}</p>

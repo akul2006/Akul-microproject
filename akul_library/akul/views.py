@@ -46,7 +46,6 @@ def add_notification(message):
 # Create your views here.
 
 def admin_login(request):
-    dark_mode = request.COOKIES.get('dark_mode')
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -55,11 +54,10 @@ def admin_login(request):
             login(request, user)
             return redirect('admin_dashboard')
         else:
-            return render(request, 'admin_login.html', {'error': 'Invalid credentials', 'dark_mode': dark_mode})
-    return render(request, 'admin_login.html', {'dark_mode': dark_mode})
+            return render(request, 'admin_login.html', {'error': 'Invalid credentials'})
+    return render(request, 'admin_login.html')
 
 def admin_register(request):
-    dark_mode = request.COOKIES.get('dark_mode')
     if request.method == 'POST':
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -70,7 +68,7 @@ def admin_register(request):
             if not User.objects.filter(username=username).exists():
                 User.objects.create_user(username=username, email=email, password=password)
                 return redirect('admin_login')
-    return render(request, 'admin_register.html', {'dark_mode': dark_mode})
+    return render(request, 'admin_register.html')
 
 def generate_circulation_report(request):
     if not HAS_REPORTLAB:
@@ -311,7 +309,6 @@ def admin_dashboard(request):
         'issue_counts': json.dumps(issue_counts),
         'member_counts': json.dumps(member_counts),
         'revenue_data': json.dumps(revenue_data),
-        'dark_mode': request.COOKIES.get('dark_mode'),
     }
     return render(request, 'admin_library.html', context)
 
@@ -648,11 +645,3 @@ def update_settings(request):
         
         add_notification("Settings updated successfully.")
     return redirect(reverse('admin_dashboard') + '?tab=settings')
-
-def toggle_theme(request):
-    current_mode = request.COOKIES.get('dark_mode')
-    new_mode = 'false' if current_mode == 'true' else 'true'
-    referer = request.META.get('HTTP_REFERER')
-    response = redirect(referer) if referer else redirect('admin_dashboard')
-    response.set_cookie('dark_mode', new_mode, max_age=31536000)
-    return response

@@ -9,6 +9,126 @@
     <link rel="icon" type="image/x-icon" href="{% static 'img/logo.ico' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --sidebar-bg: #ffffff;
+            --sidebar-text: #333333;
+            --header-bg: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-color) !important;
+            color: var(--text-color) !important;
+        }
+
+        .main-content {
+            background-color: var(--bg-color) !important;
+            color: var(--text-color) !important;
+        }
+
+        .top-header {
+            background-color: var(--header-bg) !important;
+            color: var(--text-color) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+        
+        .top-header .header-text h1 {
+            color: var(--text-color) !important;
+        }
+        
+        .top-header .header-text p {
+            color: var(--text-secondary) !important;
+        }
+
+        .chart-container, .activity-container, .issued-books-section, .top-authors-section, .book-card, .setting-card, .users-table-container, .requests-table-container, .penalties-table-container, .settings-content {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+        }
+
+        .data-table {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa !important;
+            color: #495057 !important;
+            border-bottom: 2px solid var(--border-color) !important;
+        }
+
+        .data-table td {
+            border-bottom: 1px solid var(--border-color) !important;
+            color: var(--text-color) !important;
+        }
+
+        .setting-input, .filter-dropdown, input[type="text"], input[type="search"], select, input[type="email"], input[type="password"], input[type="number"], input[type="date"], textarea {
+            background-color: #ffffff !important;
+            color: #495057 !important;
+            border: 1px solid #ced4da !important;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-color) !important;
+        }
+
+        /* Sidebar Overrides */
+        .sidebar {
+            background-color: var(--sidebar-bg) !important;
+            border-right: 1px solid var(--border-color) !important;
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+        }
+
+        .nav-link:hover {
+            background-color: #f8f9fa !important;
+            color: #007bff !important;
+        }
+
+        .nav-link.active {
+            background-color: #e3f2fd !important;
+            color: #007bff !important;
+            border-left-color: #007bff !important;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--border-color) !important;
+        }
+
+        /* Notification Overrides */
+        .notification-dropdown {
+            background-color: #ffffff !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+        }
+
+        .notification-item {
+            background-color: #ffffff;
+            color: #333333 !important;
+            border-bottom: 1px solid #eee !important;
+        }
+
+        .notification-item p {
+            color: #333333 !important;
+        }
+
+        .notification-item .notif-time {
+            color: #6c757d !important;
+        }
+
         /* Modal Styles */
         .modal {
             display: none; 
@@ -29,6 +149,7 @@
             width: 50%; 
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            color: var(--text-color);
         }
         .close-modal {
             color: #aaa;
@@ -162,8 +283,8 @@
                 <div class="user-profile">
                     <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=4A90E2&color=fff" alt="Admin">
                     <div class="user-info">
-                        <span class="user-name">{{ user.username }}</span>
-                        <span class="user-role">Admin</span>
+                        <span class="user-name" style="color: #000;">{{ user.username }}</span>
+                        <span class="user-role" style="color: #000;">Admin</span>
                     </div>
                 </div>
             </div>
@@ -1344,9 +1465,6 @@
                         }
                     }
                 });
-                if (document.body.classList.contains('dark-theme')) {
-                    updateChartTheme(true);
-                }
             }
         });
     </script>
@@ -1378,9 +1496,6 @@
                         }
                     }
                 });
-                if (document.body.classList.contains('dark-theme')) {
-                    updateChartTheme(true);
-                }
             }
         });
     </script>
@@ -1394,48 +1509,7 @@
     {% endif %}
 
     <script>
-        // Dark Mode Toggle
-        function toggleTheme() {
-            const body = document.body;
-            body.classList.toggle('dark-theme');
-            const isDark = body.classList.contains('dark-theme');
-            localStorage.setItem('dark_mode', isDark);
-            
-            const icon = document.getElementById('theme-icon');
-            if (icon) {
-                icon.innerText = isDark ? '☀️' : '🌙';
-            }
-            document.cookie = "dark_mode=" + (isDark ? "true" : "false") + "; path=/; max-age=31536000";
-            updateChartTheme(isDark);
-        }
-
-        function updateChartTheme(isDark) {
-            const textColor = isDark ? '#e0e0e0' : '#666';
-            const gridColor = isDark ? '#333' : '#ddd';
-            
-            if (window.usageChart) {
-                window.usageChart.options.scales.x.ticks.color = textColor;
-                window.usageChart.options.scales.y.ticks.color = textColor;
-                window.usageChart.options.scales.y.grid.color = gridColor;
-                window.usageChart.update();
-            }
-            if (window.revenueChart) {
-                window.revenueChart.options.scales.x.ticks.color = textColor;
-                window.revenueChart.options.scales.y.ticks.color = textColor;
-                window.revenueChart.options.scales.y.grid.color = gridColor;
-                window.revenueChart.update();
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            // Check saved theme
-            const savedTheme = localStorage.getItem('dark_mode');
-            if (savedTheme === 'true') {
-                document.body.classList.add('dark-theme');
-                const icon = document.getElementById('theme-icon');
-                if (icon) icon.innerText = '☀️';
-            }
-
             const urlParams = new URLSearchParams(window.location.search);
             const tab = urlParams.get('tab');
             if (tab) {

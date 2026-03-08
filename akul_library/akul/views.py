@@ -310,6 +310,63 @@ def admin_dashboard(request):
             student_counts.append(Student.objects.filter(joined_date__year=y, joined_date__month=m).count())
             monthly_revenue = Penalty.objects.filter(created_at__year=y, created_at__month=m).aggregate(Sum('amount'))['amount__sum'] or 0
             revenue_data.append(float(monthly_revenue))
+
+    # Author Filtering and Sorting
+    author_search = request.GET.get('author_search', '')
+    author_sort = request.GET.get('author_sort', '-book_count')
+    
+    authors_qs = Author.objects.annotate(book_count=Count('book'))
+    
+    if author_search:
+        authors_qs = authors_qs.filter(name__icontains=author_search)
+        
+    if author_sort == 'name_asc':
+        authors_qs = authors_qs.order_by('name')
+    elif author_sort == 'name_desc':
+        authors_qs = authors_qs.order_by('-name')
+    elif author_sort == 'book_count':
+        authors_qs = authors_qs.order_by('book_count')
+    else:
+        authors_qs = authors_qs.order_by('-book_count')
+
+    # Publisher Filtering and Sorting
+    publisher_search = request.GET.get('publisher_search', '')
+    publisher_sort = request.GET.get('publisher_sort', 'name_asc')
+    
+    publishers_qs = Publisher.objects.annotate(book_count=Count('book'))
+    
+    if publisher_search:
+        publishers_qs = publishers_qs.filter(name__icontains=publisher_search)
+        
+    if publisher_sort == 'name_asc':
+        publishers_qs = publishers_qs.order_by('name')
+    elif publisher_sort == 'name_desc':
+        publishers_qs = publishers_qs.order_by('-name')
+    elif publisher_sort == 'book_count_desc':
+        publishers_qs = publishers_qs.order_by('-book_count')
+    elif publisher_sort == 'book_count_asc':
+        publishers_qs = publishers_qs.order_by('book_count')
+    else:
+        publishers_qs = publishers_qs.order_by('name')
+
+    # Student Filtering and Sorting
+    student_search = request.GET.get('student_search', '')
+    student_sort = request.GET.get('student_sort', '-joined_date')
+    
+    students_qs = Student.objects.all()
+    
+    if student_search:
+        students_qs = students_qs.filter(Q(name__icontains=student_search) | Q(email__icontains=student_search))
+        
+    if student_sort == 'name_asc':
+        students_qs = students_qs.order_by('name')
+    elif student_sort == 'name_desc':
+        students_qs = students_qs.order_by('-name')
+    elif student_sort == 'joined_date_asc':
+        students_qs = students_qs.order_by('joined_date')
+    else:
+        students_qs = students_qs.order_by('-joined_date')
+
     context = {
         'books': books,
         'search_query': search_query,
@@ -318,9 +375,9 @@ def admin_dashboard(request):
         'issued_books_count': issued_books_count,
         'reserved_books_count': reserved_books_count,
         'overdue_books_count': overdue_books_count,
-        'authors': Author.objects.annotate(book_count=Count('book')).order_by('-book_count'),
-        'publishers': Publisher.objects.all().order_by('name'),
-        'students': Student.objects.all().order_by('-id'),
+        'authors': authors_qs,
+        'publishers': publishers_qs,
+        'students': students_qs,
         'users': User.objects.all().order_by('-id'),
         'circulations': circulations,
         'recent_issued': Circulation.objects.filter(status='issued').order_by('-issue_date')[:5],

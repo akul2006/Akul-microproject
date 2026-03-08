@@ -396,7 +396,7 @@
             <div class="dashboard-content">
                 <!-- Left Section -->
                 <div class="dashboard-left">
-                    <!-- Library Usage Chart -->
+                    <!-- Library Usage Chart
                     <div class="chart-container" style="position: relative; width: 100%;">
                         <div class="chart-header">
                             <h2>Library Uses</h2>
@@ -413,7 +413,7 @@
                         <div style="position: relative; height: 300px; width: 100%;">
                             <canvas id="usageChart"></canvas>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Revenue/Penalty Chart
                     <div class="chart-container" style="position: relative; width: 100%;">
@@ -606,6 +606,26 @@
                 <h1>Authors Management</h1>
                 <button class="btn-primary" onclick="openAddAuthorModal()">+ Add New Author</button>
             </div>
+            
+            <div class="filter-bar" style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <form method="GET" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="hidden" name="tab" value="authors">
+                    <input type="text" name="author_search" value="{{ request.GET.author_search|default:'' }}" placeholder="Search Author Name..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; min-width: 200px;">
+                    
+                    <select name="author_sort" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="-book_count" {% if request.GET.author_sort == '-book_count' %}selected{% endif %}>Most Books</option>
+                        <option value="book_count" {% if request.GET.author_sort == 'book_count' %}selected{% endif %}>Least Books</option>
+                        <option value="name_asc" {% if request.GET.author_sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="name_desc" {% if request.GET.author_sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                    </select>
+
+                    <button type="submit" class="btn-primary" style="padding: 10px 20px;">Filter</button>
+                    {% if request.GET.author_search or request.GET.author_sort %}
+                    <a href="{% url 'admin_dashboard' %}?tab=authors" class="btn-primary" style="background-color: #6c757d; text-decoration: none; padding: 10px 20px; display: flex; align-items: center;">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
             <div class="users-table-container">
                 <table class="data-table">
                     <thead>
@@ -972,6 +992,26 @@
                 <h1>Students Management</h1>
                 <button class="btn-primary" onclick="openAddStudentModal()">+ Add New Student</button>
             </div>
+            
+            <div class="filter-bar" style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <form method="GET" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="hidden" name="tab" value="students">
+                    <input type="text" name="student_search" value="{{ request.GET.student_search|default:'' }}" placeholder="Search Name or Email..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; min-width: 200px;">
+                    
+                    <select name="student_sort" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="-joined_date" {% if request.GET.student_sort == '-joined_date' %}selected{% endif %}>Newest Joined</option>
+                        <option value="joined_date_asc" {% if request.GET.student_sort == 'joined_date_asc' %}selected{% endif %}>Oldest Joined</option>
+                        <option value="name_asc" {% if request.GET.student_sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="name_desc" {% if request.GET.student_sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                    </select>
+
+                    <button type="submit" class="btn-primary" style="padding: 10px 20px;">Filter</button>
+                    {% if request.GET.student_search or request.GET.student_sort %}
+                    <a href="{% url 'admin_dashboard' %}?tab=students" class="btn-primary" style="background-color: #6c757d; text-decoration: none; padding: 10px 20px; display: flex; align-items: center;">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
             <div class="users-table-container">
                 <table class="data-table">
                     <thead>
@@ -1019,6 +1059,26 @@
                 <h1>Publishers Management</h1>
                 <button class="btn-primary" onclick="openAddPublisherModal()">+ Add New Publisher</button>
             </div>
+            
+            <div class="filter-bar" style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <form method="GET" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="hidden" name="tab" value="publishers">
+                    <input type="text" name="publisher_search" value="{{ request.GET.publisher_search|default:'' }}" placeholder="Search Publisher..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; min-width: 200px;">
+                    
+                    <select name="publisher_sort" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="name_asc" {% if request.GET.publisher_sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="name_desc" {% if request.GET.publisher_sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                        <option value="book_count_desc" {% if request.GET.publisher_sort == 'book_count_desc' %}selected{% endif %}>Most Books</option>
+                        <option value="book_count_asc" {% if request.GET.publisher_sort == 'book_count_asc' %}selected{% endif %}>Least Books</option>
+                    </select>
+
+                    <button type="submit" class="btn-primary" style="padding: 10px 20px;">Filter</button>
+                    {% if request.GET.publisher_search or request.GET.publisher_sort %}
+                    <a href="{% url 'admin_dashboard' %}?tab=publishers" class="btn-primary" style="background-color: #6c757d; text-decoration: none; padding: 10px 20px; display: flex; align-items: center;">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
             <div class="users-table-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
                 {% for publisher in publishers %}
                 <div class="book-card" onclick="openPublisherModal(this)" data-name="{{ publisher.name }}" title="Click to view books" style="padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; cursor: pointer;">
@@ -1623,6 +1683,47 @@
 
         function closeEditStudentModal() {
             document.getElementById('editStudentModal').style.display = 'none';
+        }
+
+        // Author Modal Functions
+        function openAuthorBooksModal(element) {
+            const row = element.closest('tr');
+            const authorName = row.querySelector('.author-name-text').innerText;
+            const booksContent = element.parentElement.querySelector('.author-books-data').innerHTML;
+            
+            document.getElementById('modalAuthorBooksName').innerText = authorName;
+            document.getElementById('modalAuthorBooksList').innerHTML = booksContent;
+            document.getElementById('authorBooksModal').style.display = 'block';
+        }
+
+        function closeAuthorBooksModal() {
+            document.getElementById('authorBooksModal').style.display = 'none';
+        }
+
+        function openAuthorModal(element) {
+            const authorName = element.querySelector('.author-name-text').innerText;
+            const bio = element.querySelector('.author-bio-data').innerHTML;
+            document.getElementById('modalAuthorName').innerText = authorName;
+            document.getElementById('modalAuthorBio').innerHTML = bio;
+            document.getElementById('authorBioModal').style.display = 'block';
+        }
+
+        function closeAuthorModal() {
+            document.getElementById('authorBioModal').style.display = 'none';
+        }
+
+        function openPublisherBooksModal(element) {
+            const row = element.closest('tr');
+            const publisherName = row.querySelector('.publisher-name-text').innerText;
+            const booksContent = element.parentElement.querySelector('.publisher-books-data').innerHTML;
+            
+            document.getElementById('modalPublisherName').innerText = publisherName;
+            document.getElementById('modalBooksList').innerHTML = booksContent;
+            document.getElementById('publisherBooksModal').style.display = 'block';
+        }
+
+        function closePublisherModal() {
+            document.getElementById('publisherBooksModal').style.display = 'none';
         }
     </script>
 

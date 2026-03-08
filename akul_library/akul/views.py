@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from .models import Author, Publisher, Book, Member, Circulation, Penalty, LibrarySettings, Notification
+from .models import Author, Publisher, Book, Student, Circulation, Penalty, LibrarySettings, Notification
 from django.contrib import messages
 from django.db import IntegrityError
 from django.db import connection
@@ -78,17 +78,27 @@ def generate_circulation_report(request):
     circ_search = request.GET.get('circ_search', '')
     circ_status = request.GET.get('circ_status', '')
     circ_sort = request.GET.get('circ_sort') or '-issue_date'
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    all_time = request.GET.get('all_time')
 
     circulations = Circulation.objects.all()
 
     if circ_search:
-        circulations = circulations.filter(Q(member__name__icontains=circ_search) | Q(book__title__icontains=circ_search))
+        circulations = circulations.filter(Q(student__name__icontains=circ_search) | Q(book__title__icontains=circ_search))
     
     if circ_status:
         if circ_status == 'overdue':
             circulations = circulations.filter(status='issued', due_date__lt=date.today())
         else:
             circulations = circulations.filter(status=circ_status)
+
+    if not all_time:
+        if start_date:
+            circulations = circulations.filter(issue_date__gte=start_date)
+        
+        if end_date:
+            circulations = circulations.filter(issue_date__lte=end_date)
 
     circulations = circulations.order_by(circ_sort, '-id')
 
@@ -111,7 +121,7 @@ def generate_circulation_report(request):
     elements.append(Paragraph("Circulation Report", title_style))
     elements.append(Spacer(1, 12))
     
-    headers = ['Member', 'Book', 'Issue Date', 'Due Date', 'Return Date', 'Status', 'Fine']
+    headers = ['Student', 'Book', 'Issue Date', 'Due Date', 'Return Date', 'Status', 'Fine']
     header_row = [Paragraph(h, header_style) for h in headers]
     data = [header_row]
     
@@ -120,7 +130,7 @@ def generate_circulation_report(request):
         return_date = circ.return_date.strftime('%Y-%m-%d') if circ.return_date else "-"
         
         row = [
-            Paragraph(circ.member.name, cell_style),
+            Paragraph(circ.student.name, cell_style),
             Paragraph(circ.book.title, cell_style),
             Paragraph(circ.issue_date.strftime('%Y-%m-%d'), cell_style),
             Paragraph(circ.due_date.strftime('%Y-%m-%d'), cell_style),
@@ -214,6 +224,10 @@ def admin_dashboard(request):
             Notification.objects.all().delete()
         elif action == 'mark_read':
             Notification.objects.filter(read=False).update(read=True)
+        elif action == 'mark_single_read':
+            notification_id = request.POST.get('notification_id')
+            if notification_id:
+                Notification.objects.filter(id=notification_id).update(read=True)
         return redirect('admin_dashboard')
 
     search_query = request.GET.get('search_query', '')
@@ -225,11 +239,14 @@ def admin_dashboard(request):
     circ_search = request.GET.get('circ_search', '')
     circ_status = request.GET.get('circ_status', '')
     circ_sort = request.GET.get('circ_sort') or '-issue_date'
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    all_time = request.GET.get('all_time')
 
     circulations = Circulation.objects.all()
 
     if circ_search:
-        circulations = circulations.filter(Q(member__name__icontains=circ_search) | Q(book__title__icontains=circ_search))
+        circulations = circulations.filter(Q(student__name__icontains=circ_search) | Q(book__title__icontains=circ_search))
     
     if circ_status:
         if circ_status == 'overdue':
@@ -237,9 +254,16 @@ def admin_dashboard(request):
         else:
             circulations = circulations.filter(status=circ_status)
 
+    if not all_time:
+        if start_date:
+            circulations = circulations.filter(issue_date__gte=start_date)
+        
+        if end_date:
+            circulations = circulations.filter(issue_date__lte=end_date)
+
     circulations = circulations.order_by(circ_sort, '-id')
 
-    total_members = Member.objects.count()
+    total_students = Student.objects.count()
     issued_books_count = Circulation.objects.filter(status='issued').count()
     reserved_books_count = Book.objects.aggregate(Sum('available_quantity'))['available_quantity__sum'] or 0
     overdue_books_count = Circulation.objects.filter(status='issued', due_date__lt=date.today()).count()
@@ -250,7 +274,7 @@ def admin_dashboard(request):
     chart_range = request.GET.get('chart_range', '6_months')
     chart_labels = []
     issue_counts = []
-    member_counts = []
+    student_counts = []
     revenue_data = []
     today = date.today()
     
@@ -259,7 +283,7 @@ def admin_dashboard(request):
             d = today - timedelta(days=i)
             chart_labels.append(d.strftime('%a'))
             issue_counts.append(Circulation.objects.filter(issue_date=d).count())
-            member_counts.append(Member.objects.filter(joined_date__year=d.year, joined_date__month=d.month, joined_date__day=d.day).count())
+            student_counts.append(Student.objects.filter(joined_date__year=d.year, joined_date__month=d.month, joined_date__day=d.day).count())
             monthly_revenue = Penalty.objects.filter(created_at__year=d.year, created_at__month=d.month, created_at__day=d.day).aggregate(Sum('amount'))['amount__sum'] or 0
             revenue_data.append(float(monthly_revenue))
     elif chart_range == 'last_year':
@@ -271,7 +295,7 @@ def admin_dashboard(request):
                 y -= 1
             chart_labels.append(date(y, m, 1).strftime('%b'))
             issue_counts.append(Circulation.objects.filter(issue_date__year=y, issue_date__month=m).count())
-            member_counts.append(Member.objects.filter(joined_date__year=y, joined_date__month=m).count())
+            student_counts.append(Student.objects.filter(joined_date__year=y, joined_date__month=m).count())
             monthly_revenue = Penalty.objects.filter(created_at__year=y, created_at__month=m).aggregate(Sum('amount'))['amount__sum'] or 0
             revenue_data.append(float(monthly_revenue))
     else:
@@ -283,21 +307,20 @@ def admin_dashboard(request):
                 y -= 1
             chart_labels.append(date(y, m, 1).strftime('%b'))
             issue_counts.append(Circulation.objects.filter(issue_date__year=y, issue_date__month=m).count())
-            member_counts.append(Member.objects.filter(joined_date__year=y, joined_date__month=m).count())
+            student_counts.append(Student.objects.filter(joined_date__year=y, joined_date__month=m).count())
             monthly_revenue = Penalty.objects.filter(created_at__year=y, created_at__month=m).aggregate(Sum('amount'))['amount__sum'] or 0
             revenue_data.append(float(monthly_revenue))
-
     context = {
         'books': books,
         'search_query': search_query,
         'total_books': Book.objects.count(),
-        'total_members': total_members,
+        'total_students': total_students,
         'issued_books_count': issued_books_count,
         'reserved_books_count': reserved_books_count,
         'overdue_books_count': overdue_books_count,
         'authors': Author.objects.annotate(book_count=Count('book')).order_by('-book_count'),
         'publishers': Publisher.objects.all().order_by('name'),
-        'members': Member.objects.all().order_by('-id'),
+        'students': Student.objects.all().order_by('-id'),
         'users': User.objects.all().order_by('-id'),
         'circulations': circulations,
         'recent_issued': Circulation.objects.filter(status='issued').order_by('-issue_date')[:5],
@@ -307,7 +330,7 @@ def admin_dashboard(request):
         'unread_count': unread_count,
         'chart_labels': json.dumps(chart_labels),
         'issue_counts': json.dumps(issue_counts),
-        'member_counts': json.dumps(member_counts),
+        'student_counts': json.dumps(student_counts),
         'revenue_data': json.dumps(revenue_data),
     }
     return render(request, 'admin_library.html', context)
@@ -319,28 +342,39 @@ def admin_logout(request):
 def add_book(request):
     if request.method == "POST":
         title = request.POST.get('title')
-        author_id = request.POST.get('author')
-        publisher_id = request.POST.get('publisher')
         isbn = request.POST.get('isbn')
         total_qty = request.POST.get('total_quantity')
         avail_qty = request.POST.get('available_quantity')
         image_url = request.POST.get('image_url')
         
-        if not author_id:
-            add_notification("Failed to add book: Please select an author.")
+        # Handle Author (Select existing or Create new)
+        author = None
+        new_author_name = request.POST.get('new_author')
+        if new_author_name:
+            author, created = Author.objects.get_or_create(name=new_author_name)
+        elif request.POST.get('author'):
+            author = get_object_or_404(Author, id=request.POST.get('author'))
+
+        if not author:
+            add_notification("Failed to add book: Please select or enter an author.")
             return redirect(reverse('admin_dashboard') + '?tab=books')
 
-        if not publisher_id:
-            add_notification("Failed to add book: Please select a publisher.")
+        # Handle Publisher (Select existing or Create new)
+        publisher = None
+        new_publisher_name = request.POST.get('new_publisher')
+        if new_publisher_name:
+            publisher, created = Publisher.objects.get_or_create(name=new_publisher_name)
+        elif request.POST.get('publisher'):
+            publisher = get_object_or_404(Publisher, id=request.POST.get('publisher'))
+
+        if not publisher:
+            add_notification("Failed to add book: Please select or enter a publisher.")
             return redirect(reverse('admin_dashboard') + '?tab=books')
             
         if Book.objects.filter(isbn=isbn).exists():
             add_notification("Failed to add book: A book with this ISBN already exists.")
             return redirect(reverse('admin_dashboard') + '?tab=books')
 
-        author = get_object_or_404(Author, id=author_id)
-        publisher = get_object_or_404(Publisher, id=publisher_id)
-        
         try:
             Book.objects.create(
                 title=title, author=author, publisher=publisher, isbn=isbn,
@@ -408,21 +442,21 @@ def add_user(request):
 
 def add_penalty(request):
     if request.method == "POST":
-        member_input = request.POST.get('member')
+        student_input = request.POST.get('student')
         username_input = request.POST.get('username')
         amount = request.POST.get('amount')
         reason = request.POST.get('reason')
         book_title = request.POST.get('book_title')
         
-        member = None
-        if member_input and member_input.isdigit():
-            member = Member.objects.filter(id=member_input).first()
+        student = None
+        if student_input and student_input.isdigit():
+            student = Student.objects.filter(id=student_input).first()
             
-        if not member and member_input:
-            member = Member.objects.filter(name__iexact=member_input).first()
+        if not student and student_input:
+            student = Student.objects.filter(name__iexact=student_input).first()
             
-        if not member and username_input:
-            member = Member.objects.filter(name__iexact=username_input).first()
+        if not student and username_input:
+            student = Student.objects.filter(name__iexact=username_input).first()
 
         book = None
         if book_title:
@@ -431,19 +465,19 @@ def add_penalty(request):
         if not reason and book_title:
             reason = f"Book: {book_title}"
 
-        if member and amount:
-            Penalty.objects.create(member=member, book=book, amount=amount, reason=reason or "Penalty")
+        if student and amount:
+            Penalty.objects.create(student=student, book=book, amount=amount, reason=reason or "Penalty")
         return redirect('admin_dashboard')
 
-def add_member(request):
+def add_student(request):
     if request.method == "POST":
         name = request.POST.get('name')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
         address = request.POST.get('address')
         
-        Member.objects.create(name=name, email=email, phone=phone, address=address)
-        return redirect(reverse('admin_dashboard') + '?tab=members')
+        Student.objects.create(name=name, email=email, phone=phone, address=address)
+        return redirect(reverse('admin_dashboard') + '?tab=students')
 
 def edit_book(request):
     if request.method == "POST":
@@ -477,7 +511,7 @@ def delete_book(request, book_id):
 
 def fix_sequences(request):
     """Resets the database sequences to fix 'duplicate key' errors."""
-    sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Book, Author, Publisher, Member, Circulation, Penalty])
+    sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Book, Author, Publisher, Student, Circulation, Penalty])
     with connection.cursor() as cursor:
         for sql in sequence_sql:
             cursor.execute(sql)
@@ -485,12 +519,12 @@ def fix_sequences(request):
 
 def issue_book(request):
     if request.method == "POST":
-        member_id = request.POST.get('member')
+        student_id = request.POST.get('student')
         book_id = request.POST.get('book')
         issue_date_str = request.POST.get('issue_date')
         
-        if member_id and book_id and issue_date_str:
-            member = get_object_or_404(Member, id=member_id)
+        if student_id and book_id and issue_date_str:
+            student = get_object_or_404(Student, id=student_id)
             book = get_object_or_404(Book, id=book_id)
             
             issue_date = datetime.strptime(issue_date_str, '%Y-%m-%d').date()
@@ -499,10 +533,10 @@ def issue_book(request):
             due_date = issue_date + timedelta(days=loan_duration)
             
             if book.available_quantity > 0:
-                Circulation.objects.create(member=member, book=book, issue_date=issue_date, due_date=due_date, status='issued')
+                Circulation.objects.create(student=student, book=book, issue_date=issue_date, due_date=due_date, status='issued')
                 book.available_quantity -= 1
                 book.save()
-                add_notification(f"Book '{book.title}' issued to {member.name}")
+                add_notification(f"Book '{book.title}' issued to {student.name}")
                 
     return redirect(reverse('admin_dashboard') + '?tab=circulations')
 
@@ -525,10 +559,10 @@ def return_book(request):
                 circulation.fine_amount = fine_amount
                 
                 # Create a penalty record
-                Penalty.objects.create(member=circulation.member, book=circulation.book, due_date=circulation.due_date, days_overdue=overdue_days, amount=fine_amount, reason=f"Overdue: {circulation.book.title}", status='unpaid')
-                add_notification(f"Book '{book.title}' returned overdue by {circulation.member.name}. Penalty: {fine_amount}")
+                Penalty.objects.create(student=circulation.student, book=circulation.book, due_date=circulation.due_date, days_overdue=overdue_days, amount=fine_amount, reason=f"Overdue: {circulation.book.title}", status='unpaid')
+                add_notification(f"Book '{book.title}' returned overdue by {circulation.student.name}. Penalty: {fine_amount}")
             else:
-                add_notification(f"Book '{book.title}' returned by {circulation.member.name}")
+                add_notification(f"Book '{book.title}' returned by {circulation.student.name}")
             
             circulation.save()
             
@@ -549,7 +583,7 @@ def mark_penalty_paid(request, penalty_id):
         penalty = get_object_or_404(Penalty, id=penalty_id)
         penalty.status = 'Paid'
         penalty.save()
-        add_notification(f"Penalty for {penalty.member.name} marked as Paid.")
+        add_notification(f"Penalty for {penalty.student.name} marked as Paid.")
     return redirect(reverse('admin_dashboard') + '?tab=penalties')
 
 def edit_user(request):
@@ -612,23 +646,23 @@ def delete_author(request, author_id):
     author.delete()
     return redirect(reverse('admin_dashboard') + '?tab=authors')
 
-def edit_member(request):
+def edit_student(request):
     if request.method == "POST":
-        member_id = request.POST.get('member_id')
-        member = get_object_or_404(Member, id=member_id)
-        member.name = request.POST.get('name')
-        member.email = request.POST.get('email')
-        member.phone = request.POST.get('phone')
-        member.address = request.POST.get('address')
-        member.save()
-    return redirect(reverse('admin_dashboard') + '?tab=members')
+        student_id = request.POST.get('student_id')
+        student = get_object_or_404(Student, id=student_id)
+        student.name = request.POST.get('name')
+        student.email = request.POST.get('email')
+        student.phone = request.POST.get('phone')
+        student.address = request.POST.get('address')
+        student.save()
+    return redirect(reverse('admin_dashboard') + '?tab=students')
 
-def delete_member(request):
+def delete_student(request):
     if request.method == "POST":
-        member_id = request.POST.get('member_id')
-        member = get_object_or_404(Member, id=member_id)
-        member.delete()
-    return redirect(reverse('admin_dashboard') + '?tab=members')
+        student_id = request.POST.get('student_id')
+        student = get_object_or_404(Student, id=student_id)
+        student.delete()
+    return redirect(reverse('admin_dashboard') + '?tab=students')
 
 def update_settings(request):
     if request.method == "POST":

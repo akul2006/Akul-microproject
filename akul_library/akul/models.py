@@ -28,7 +28,7 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
-class Member(models.Model):
+class Student(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15)
@@ -44,7 +44,7 @@ class Circulation(models.Model):
         ('returned', 'Returned'),
         ('overdue', 'Overdue'),
     ]
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     issue_date = models.DateField()
     due_date = models.DateField()
@@ -54,7 +54,7 @@ class Circulation(models.Model):
     remarks = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.member.name} - {self.book.title}"
+        return f"{self.student.name} - {self.book.title}"
 
 class BookRequest(models.Model):
     STATUS_CHOICES = [
@@ -62,20 +62,20 @@ class BookRequest(models.Model):
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     ]
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     request_date = models.DateField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
 
     def __str__(self):
-        return f"Request: {self.book.title} by {self.member.name}"
+        return f"Request: {self.book.title} by {self.student.name}"
 
 class Penalty(models.Model):
     STATUS_CHOICES = [
         ('paid', 'Paid'),
         ('unpaid', 'Unpaid'),
     ]
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.SET_NULL, null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
     days_overdue = models.IntegerField(default=0)
@@ -85,7 +85,7 @@ class Penalty(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Penalty: {self.member.name} - {self.amount}"
+        return f"Penalty: {self.student.name} - {self.amount}"
 
 class LibrarySettings(models.Model):
     library_name = models.CharField(max_length=200, default='Central City Library')

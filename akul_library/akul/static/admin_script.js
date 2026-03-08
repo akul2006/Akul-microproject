@@ -2,14 +2,43 @@
 function checkHash() {
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
+    const openIssue = urlParams.get('open_issue');
     
     if (tab && document.getElementById(tab)) {
         showPage(tab);
+        
+        // Auto-open Issue Modal if triggered by QR Code
+        if (tab === 'circulations' && openIssue === 'true') {
+            const isbn = urlParams.get('isbn');
+            openIssueBookModal();
+            
+            // Auto-fill Book
+            const bookSelect = document.querySelector('#issueBookModal select[name="book"]');
+            if(bookSelect && isbn) {
+                const cleanIsbn = isbn.replace(/[^0-9X]/gi, '');
+                const option = Array.from(bookSelect.options).find(opt => {
+                    const optIsbn = opt.getAttribute('data-isbn') || '';
+                    return optIsbn.replace(/[^0-9X]/gi, '') === cleanIsbn;
+                });
+                if (option) bookSelect.value = option.value;
+            }
+            
+            // Auto-fill Date (Today)
+            const dateInput = document.querySelector('#issueBookModal input[name="issue_date"]');
+            if(dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        }
     } else if (window.location.hash) {
         const pageName = window.location.hash.substring(1);
         if (document.getElementById(pageName)) showPage(pageName);
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const allTimeCheckbox = document.getElementById('allTimeCheckbox');
+    if (allTimeCheckbox) toggleDateInputs(allTimeCheckbox);
+});
 
 document.addEventListener('DOMContentLoaded', checkHash);
 // Check immediately in case the script runs after DOMContentLoaded
@@ -37,18 +66,18 @@ function showPage(pageName) {
     });
 }
 
-// Toggle Notifications
-function toggleNotifications() {
+// Notification Logic
+function toggleNotifications(event) {
+    event.stopPropagation();
     const dropdown = document.getElementById('notificationDropdown');
-    dropdown.classList.toggle('active');
+    if (dropdown) {
+        dropdown.classList.toggle('active');
+    }
 }
 
-// Close notifications when clicking outside
-document.addEventListener('click', function (event) {
-    const notifIcon = document.querySelector('.notification-icon');
+window.addEventListener('click', function (event) {
     const dropdown = document.getElementById('notificationDropdown');
-
-    if (!notifIcon.contains(event.target) && !dropdown.contains(event.target)) {
+    if (dropdown && dropdown.classList.contains('active') && !dropdown.contains(event.target)) {
         dropdown.classList.remove('active');
     }
 });
@@ -91,6 +120,21 @@ function deleteAuthor(id) {
     if (confirm("Are you sure you want to delete this author?")) {
         window.location.href = "/delete_author/" + id;
     }
+}
+
+function openAuthorBooksModal(btn) {
+    const modal = document.getElementById('authorBooksModal');
+    const row = btn.closest('tr');
+    const name = row.querySelector('.author-name-text').innerText;
+    const booksHtml = row.querySelector('.author-books-data').innerHTML;
+
+    document.getElementById('modalAuthorBooksName').innerText = name + "'s Books";
+    document.getElementById('modalAuthorBooksList').innerHTML = booksHtml;
+    modal.style.display = "block";
+}
+
+function closeAuthorBooksModal() {
+    document.getElementById('authorBooksModal').style.display = "none";
 }
 
 // Book Modal Functions
@@ -216,11 +260,81 @@ function closeEditMemberModal() {
     document.getElementById('editMemberModal').style.display = "none";
 }
 
+// Generate Report Modal Functions
+function openGenerateReportModal() {
+    document.getElementById('generateReportModal').style.display = "block";
+}
+
+function closeGenerateReportModal() {
+    document.getElementById('generateReportModal').style.display = "none";
+}
+
+
+let html5QrcodeScanner;
+
+function openScanBarcodeModal() {
+    document.getElementById('scanQRModal').style.display = 'block';
+    
+    // Ensure any previous instance is cleared
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear().catch(error => {
+            console.error("Failed to clear existing scanner", error);
+        }).finally(() => {
+            startScanner();
+        });
+    } else {
+        startScanner();
+    }
+}
+
+function startScanner() {
+    const config = { 
+        fps: 10, 
+        qrbox: 250,
+        formatsToSupport: [ 
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.QR_CODE 
+        ]
+    };
+    html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config);
+    html5QrcodeScanner.render(onScanSuccess);
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    // Handle on success condition with the decoded text
+    html5QrcodeScanner.clear().then(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', 'circulations');
+        url.searchParams.set('open_issue', 'true');
+        url.searchParams.set('isbn', decodedText);
+        window.location.href = url.toString();
+    }).catch(err => {
+        console.error(err);
+    });
+}
+
+function closeScanQRModal() {
+    document.getElementById('scanQRModal').style.display = 'none';
+    if(html5QrcodeScanner) {
+        html5QrcodeScanner.clear().then(() => {
+            html5QrcodeScanner = null;
+        }).catch(error => {
+            console.error("Failed to clear scanner", error);
+            html5QrcodeScanner = null;
+        });
+    }
+}
+
 window.onclick = function (event) {
     const modal = document.getElementById('publisherBooksModal');
     const addAuthorModal = document.getElementById('addAuthorModal');
     const editAuthorModal = document.getElementById('editAuthorModal');
     const authorBioModal = document.getElementById('authorBioModal');
+    const authorBooksModal = document.getElementById('authorBooksModal');
     const addBookModal = document.getElementById('addBookModal');
     const editBookModal = document.getElementById('editBookModal');
     const addPublisherModal = document.getElementById('addPublisherModal');
@@ -231,6 +345,9 @@ window.onclick = function (event) {
     const addMemberModal = document.getElementById('addMemberModal');
     const editMemberModal = document.getElementById('editMemberModal');
     const issueBookModal = document.getElementById('issueBookModal');
+    const viewQRModal = document.getElementById('viewQRModal');
+    const scanQRModal = document.getElementById('scanQRModal');
+    const generateReportModal = document.getElementById('generateReportModal');
 
     if (event.target == modal) {
         modal.style.display = "none";
@@ -240,6 +357,8 @@ window.onclick = function (event) {
         editAuthorModal.style.display = "none";
     } else if (authorBioModal && event.target == authorBioModal) {
         authorBioModal.style.display = "none";
+    } else if (authorBooksModal && event.target == authorBooksModal) {
+        authorBooksModal.style.display = "none";
     } else if (addBookModal && event.target == addBookModal) {
         addBookModal.style.display = "none";
     } else if (editBookModal && event.target == editBookModal) {
@@ -260,5 +379,24 @@ window.onclick = function (event) {
         editMemberModal.style.display = "none";
     } else if (issueBookModal && event.target == issueBookModal) {
         issueBookModal.style.display = "none";
+    } else if (scanQRModal && event.target == scanQRModal) {
+        closeScanQRModal(); // Use function to clear scanner
+    } else if (generateReportModal && event.target == generateReportModal) {
+        generateReportModal.style.display = "none";
+    }
+}
+
+function toggleDateInputs(checkbox) {
+    const startDate = document.querySelector('input[name="start_date"]');
+    const endDate = document.querySelector('input[name="end_date"]');
+    
+    if (startDate && endDate) {
+        if (checkbox.checked) {
+            startDate.disabled = true;
+            endDate.disabled = true;
+        } else {
+            startDate.disabled = false;
+            endDate.disabled = false;
+        }
     }
 }

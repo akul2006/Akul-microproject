@@ -91,10 +91,23 @@ function toggleNotifications(event) {
     }
 }
 
+function toggleProfileDropdown(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('profileDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('active');
+    }
+}
+
 window.addEventListener('click', function (event) {
     const dropdown = document.getElementById('notificationDropdown');
     if (dropdown && dropdown.classList.contains('active') && !dropdown.contains(event.target)) {
         dropdown.classList.remove('active');
+    }
+
+    const profileDropdown = document.getElementById('profileDropdown');
+    if (profileDropdown && profileDropdown.classList.contains('active') && !profileDropdown.contains(event.target)) {
+        profileDropdown.classList.remove('active');
     }
 });
 
@@ -162,7 +175,89 @@ function closeAddBookModal() {
     document.getElementById('addBookModal').style.display = "none";
 }
 
-function openEditBookModal(id, title, authorId, isbn, totalQty, availQty, imageUrl) {
+async function fetchBookDetails() {
+    const isbnInput = document.getElementById('addBookIsbnInput');
+    const feedback = document.getElementById('isbnFeedback');
+    
+    if (!isbnInput || !isbnInput.value.trim()) {
+        feedback.style.color = '#dc3545';
+        feedback.innerText = 'Please enter an ISBN first.';
+        return;
+    }
+
+    // Remove non-numeric characters (allow 'X' for ISBN-10)
+    const isbn = isbnInput.value.trim().replace(/[^0-9X]/gi, '');
+    feedback.style.color = '#007bff';
+    feedback.innerText = 'Fetching details from Google Books...';
+
+    try {
+        const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+        const data = await response.json();
+
+        if (data.totalItems > 0 && data.items && data.items.length > 0) {
+            const book = data.items[0].volumeInfo;
+
+                fillBookForm(
+                    book.title,
+                    book.authors ? book.authors[0] : '',
+                    book.publisher || '',
+                    (book.imageLinks && book.imageLinks.thumbnail) ? book.imageLinks.thumbnail.replace(/^http:\/\//i, 'https://') : ''
+                );
+
+            feedback.style.color = '#28a745';
+                feedback.innerText = 'Book details fetched successfully from Google Books!';
+                return;
+            }
+
+            // Fallback: Open Library API
+            feedback.innerText = 'Not found in Google. Trying Open Library...';
+            const olResponse = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
+            const olData = await olResponse.json();
+            const olKey = `ISBN:${isbn}`;
+
+            if (olData[olKey]) {
+                const book = olData[olKey];
+                fillBookForm(
+                    book.title,
+                    (book.authors && book.authors.length > 0) ? book.authors[0].name : '',
+                    (book.publishers && book.publishers.length > 0) ? book.publishers[0].name : '',
+                    (book.cover && book.cover.medium) ? book.cover.medium : ''
+                );
+
+                feedback.style.color = '#28a745';
+                feedback.innerText = 'Book details fetched successfully from Open Library!';
+        } else {
+            feedback.style.color = '#dc3545';
+                feedback.innerText = 'Book not found in Google Books or Open Library.';
+        }
+    } catch (error) {
+        console.error('Error fetching book details:', error);
+        feedback.style.color = '#dc3545';
+        feedback.innerText = 'Error fetching details. Please try again.';
+    }
+}
+
+function fillBookForm(title, author, publisher, imageUrl) {
+    if (title) document.getElementById('addBookTitle').value = title;
+
+    if (author) {
+        const authorSelect = document.querySelector('#addBookModal select[name="author"]');
+        if (authorSelect) authorSelect.value = ""; 
+        document.getElementById('addBookNewAuthor').value = author;
+    }
+
+    if (publisher) {
+        const publisherSelect = document.querySelector('#addBookModal select[name="publisher"]');
+        if (publisherSelect) publisherSelect.value = ""; 
+        document.getElementById('addBookNewPublisher').value = publisher;
+    }
+
+    if (imageUrl) {
+        document.getElementById('addBookImageUrl').value = imageUrl;
+    }
+}
+
+function openEditBookModal(id, title, authorId, isbn, totalQty, availQty, imageUrl, location) {
     document.getElementById('editBookId').value = id;
     document.getElementById('editBookTitle').value = title;
     document.getElementById('editBookAuthor').value = authorId;
@@ -170,6 +265,8 @@ function openEditBookModal(id, title, authorId, isbn, totalQty, availQty, imageU
     document.getElementById('editBookTotalQty').value = totalQty;
     document.getElementById('editBookAvailQty').value = availQty;
     document.getElementById('editBookImage').value = imageUrl;
+
+    if (document.getElementById('editBookLocation')) document.getElementById('editBookLocation').value = location || '';
     document.getElementById('editBookModal').style.display = "block";
 }
 
@@ -183,7 +280,6 @@ function deleteBook(id) {
     }
 }
 
-// Publisher Modal Functions
 function openAddPublisherModal() {
     document.getElementById('addPublisherModal').style.display = "block";
 }
@@ -276,7 +372,124 @@ function closeEditMemberModal() {
     document.getElementById('editMemberModal').style.display = "none";
 }
 
-// Generate Report Modal Functions
+function openEmailStudentModal(email) {
+    const studentSelect = document.getElementById('emailStudentAddress');
+    const customEmailInput = document.getElementById('customEmailAddress');
+    
+    if(studentSelect) {
+        studentSelect.value = '';
+        if(customEmailInput) {
+            customEmailInput.value = '';
+            customEmailInput.style.display = 'none';
+        }
+        document.getElementById('emailTemplateSelector').value = 'custom';
+        document.getElementById('emailSubject').value = '';
+        document.getElementById('emailMessage').value = '';
+        if(document.getElementById('overdueBooksArea')) document.getElementById('overdueBooksArea').style.display = 'none';
+
+        if (email) {
+            let optionExists = false;
+            for (let i = 0; i < studentSelect.options.length; i++) {
+                if (studentSelect.options[i].value === email) {
+                    studentSelect.value = email;
+                    optionExists = true;
+                    break;
+                }
+            }
+            if (!optionExists && customEmailInput) {
+                studentSelect.value = 'custom';
+                customEmailInput.value = email;
+                customEmailInput.style.display = 'block';
+            }
+        }
+        
+        if (typeof updateStudentEmailContext === 'function') {
+            updateStudentEmailContext();
+        }
+    }
+    
+    document.getElementById('emailStudentModal').style.display = "block";
+}
+
+function updateStudentEmailContext() {
+    const studentSelect = document.getElementById('emailStudentAddress');
+    const customEmailInput = document.getElementById('customEmailAddress');
+    const overdueArea = document.getElementById('overdueBooksArea');
+    const overdueList = document.getElementById('overdueBooksList');
+    
+    if(!studentSelect) return;
+
+    if (studentSelect.value === 'custom') {
+        if(customEmailInput) {
+            customEmailInput.style.display = 'block';
+            customEmailInput.required = true;
+        }
+        if(overdueArea) overdueArea.style.display = 'none';
+    } else {
+        if(customEmailInput) {
+            customEmailInput.style.display = 'none';
+            customEmailInput.required = false;
+        }
+        
+        const email = studentSelect.value;
+        if (typeof overdueData !== 'undefined' && email && overdueData[email] && overdueData[email].length > 0) {
+            if(overdueArea) overdueArea.style.display = 'block';
+            if(overdueList) {
+                overdueList.innerHTML = '';
+                overdueData[email].forEach(function(book) {
+                    let li = document.createElement('li');
+                    li.innerText = book;
+                    overdueList.appendChild(li);
+                });
+            }
+        } else {
+            if(overdueArea) overdueArea.style.display = 'none';
+        }
+    }
+    
+    const template = document.getElementById('emailTemplateSelector');
+    if (template && template.value !== 'custom') {
+        applyEmailTemplate();
+    }
+}
+
+function applyEmailTemplate() {
+    const template = document.getElementById('emailTemplateSelector').value;
+    const subject = document.getElementById('emailSubject');
+    const message = document.getElementById('emailMessage');
+    
+    const studentSelect = document.getElementById('emailStudentAddress');
+    let studentName = "Student";
+    let email = studentSelect ? studentSelect.value : '';
+    
+    if (studentSelect && studentSelect.selectedIndex > 0 && studentSelect.value !== 'custom') {
+        studentName = studentSelect.options[studentSelect.selectedIndex].getAttribute('data-name');
+    }
+    
+    let adminName = typeof currentAdminName !== 'undefined' ? currentAdminName : 'Admin';
+    let libraryName = typeof currentLibraryName !== 'undefined' ? currentLibraryName : 'Library';
+    
+    let booksText = "";
+    if (typeof overdueData !== 'undefined' && email && overdueData[email] && overdueData[email].length > 0) {
+        booksText = "\n\nOverdue Books:\n- " + overdueData[email].join('\n- ');
+    }
+
+    if (template === 'welcome') {
+        subject.value = `Welcome to ${libraryName}!`;
+        message.value = `Dear ${studentName},\n\nWelcome to ${libraryName}! Your account has been successfully created. You can now visit the library and start borrowing books from our vast collection.\n\nPlease let us know if you have any questions.\n\nRegards,\n${adminName}`;
+    } else if (template === 'overdue') {
+        subject.value = 'URGENT: Overdue Book Notice';
+        message.value = `Dear ${studentName},\n\nThis is an important notice regarding one or more books on your account that are currently overdue.${booksText}\n\nPlease return them as soon as possible to avoid any further penalties.\n\nRegards,\n${adminName}`;
+    } else if (template === 'reminder') {
+        subject.value = 'Reminder: Book Due Soon';
+        message.value = `Dear ${studentName},\n\nThis is a friendly reminder that a book you borrowed is due very soon. Please ensure you return it on or before the due date to avoid late fees.\n\nRegards,\n${adminName}`;
+    }
+}
+
+function closeEmailStudentModal() {
+    document.getElementById('emailStudentModal').style.display = "none";
+}
+
 function openGenerateReportModal() {
     document.getElementById('generateReportModal').style.display = "block";
 }
@@ -298,7 +511,6 @@ let html5QrcodeScanner;
 function openScanBarcodeModal() {
     document.getElementById('scanQRModal').style.display = 'block';
     
-    // Ensure any previous instance is cleared
     if (html5QrcodeScanner) {
         html5QrcodeScanner.clear().catch(error => {
             console.error("Failed to clear existing scanner", error);
@@ -363,6 +575,7 @@ window.onclick = function (event) {
     const addMemberModal = document.getElementById('addMemberModal');
     const editMemberModal = document.getElementById('editMemberModal');
     const issueBookModal = document.getElementById('issueBookModal');
+    const emailStudentModal = document.getElementById('emailStudentModal');
     const viewQRModal = document.getElementById('viewQRModal');
     const scanQRModal = document.getElementById('scanQRModal');
     const generateReportModal = document.getElementById('generateReportModal');
@@ -397,6 +610,8 @@ window.onclick = function (event) {
         editMemberModal.style.display = "none";
     } else if (issueBookModal && event.target == issueBookModal) {
         issueBookModal.style.display = "none";
+    } else if (emailStudentModal && event.target == emailStudentModal) {
+        emailStudentModal.style.display = "none";
     } else if (scanQRModal && event.target == scanQRModal) {
         closeScanQRModal(); // Use function to clear scanner
     } else if (generateReportModal && event.target == generateReportModal) {

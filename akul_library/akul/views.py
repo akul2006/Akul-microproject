@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from .models import Author, Publisher, Book, Student, Circulation, Penalty, LibrarySettings, Notification
+from .models import Author, Publisher, Book, Student, Circulation, Penalty, LibrarySettings, Notification, AuditLog, EmailLog
 from django.contrib import messages
 from django.db import IntegrityError
 from django.db import connection
@@ -42,6 +42,10 @@ def add_notification(message):
         last_50_ids = Notification.objects.order_by('-created_at').values_list('id', flat=True)[:50]
         # Delete the rest
         Notification.objects.exclude(id__in=list(last_50_ids)).delete()
+        
+def log_audit(request, action_message):
+    username = request.user.username if request and hasattr(request, 'user') and request.user.is_authenticated else 'System'
+    AuditLog.objects.create(username=username, action=action_message)
 
 # Create your views here.
 
@@ -52,6 +56,7 @@ def admin_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            log_audit(request, "logged into the system.")
             return redirect('admin_dashboard')
         else:
             return render(request, 'admin_login.html', {'error': 'Invalid credentials'})
@@ -218,17 +223,84 @@ def admin_dashboard(request):
     if request.GET.get('action') == 'generate_report':
         return generate_circulation_report(request)
 
-    if request.method == 'POST' and 'notification_action' in request.POST:
-        action = request.POST.get('notification_action')
-        if action == 'clear':
-            Notification.objects.all().delete()
-        elif action == 'mark_read':
-            Notification.objects.filter(read=False).update(read=True)
-        elif action == 'mark_single_read':
-            notification_id = request.POST.get('notification_id')
-            if notification_id:
-                Notification.objects.filter(id=notification_id).update(read=True)
-        return redirect(request.META.get('HTTP_REFERER', 'admin_dashboard'))
+    if request.method == 'POST':
+        lib_settings = get_library_settings()
+        if 'action' in request.POST:
+            action = request.POST.get('action')
+            if action == 'test_email':
+                recipient = request.POST.get('test_email_address')
+                try:
+                    from django.core.mail import send_mail
+                    send_mail(
+                        f'Test Email from {lib_settings.library_name}',
+                        'This is a test email to verify your Django email configuration is working correctly.',
+                        None,
+                        [recipient],
+                        fail_silently=False,
+                    )
+                    EmailLog.objects.create(recipient=recipient, subject=f'Test Email from {lib_settings.library_name}', message='This is a test email to verify your Django email configuration is working correctly.')
+                    add_notification(f"Test email sent successfully to {recipient}")
+                    log_audit(request, f"sent a test email to {recipient}.")
+                except Exception as e:
+                    add_notification(f"Failed to send test email: {str(e)}")
+                return redirect(reverse('admin_dashboard') + '?tab=settings')
+                
+            elif action == 'email_student':
+                recipient = request.POST.get('recipient_email')
+                if recipient == 'custom':
+                    recipient = request.POST.get('custom_email')
+                subject = request.POST.get('email_subject')
+                message = request.POST.get('email_message')
+                try:
+                    from django.core.mail import send_mail
+                    send_mail(subject, message, None, [recipient], fail_silently=False)
+                    EmailLog.objects.create(recipient=recipient, subject=subject, message=message)
+                    add_notification(f"Email sent successfully to {recipient}")
+                    log_audit(request, f"sent a manual email to {recipient}.")
+                except Exception as e:
+                    add_notification(f"Failed to send email to {recipient}: {str(e)}")
+                return redirect(reverse('admin_dashboard') + '?tab=students')
+                
+            elif action == 'email_all_overdue':
+                overdue_circs = Circulation.objects.filter(status='issued', due_date__lt=date.today())
+                student_overdues = {}
+                for circ in overdue_circs:
+                    if circ.student not in student_overdues:
+                        student_overdues[circ.student] = []
+                    student_overdues[circ.student].append(circ)
+                
+                success_count = 0
+                for student, circs in student_overdues.items():
+                    books_list = "\n".join([f"- {c.book.title} (Due: {c.due_date})" for c in circs])
+                    subject = "URGENT: Overdue Library Books"
+                    message = f"Dear {student.name},\n\nThis is an automated notice that you have the following overdue books:\n{books_list}\n\nPlease return them as soon as possible to avoid further penalties.\n\nRegards,\n{lib_settings.library_name} Admin"
+                    
+                    try:
+                        from django.core.mail import send_mail
+                        send_mail(subject, message, None, [student.email], fail_silently=True)
+                        EmailLog.objects.create(recipient=student.email, subject=subject, message=message)
+                        success_count += 1
+                    except Exception:
+                        pass
+                
+                if success_count > 0:
+                    add_notification(f"Overdue warning emails sent successfully to {success_count} students.")
+                    log_audit(request, f"sent mass overdue warning emails to {success_count} students.")
+                else:
+                    add_notification("No overdue emails were sent. Server error or no overdues.")
+                return redirect(reverse('admin_dashboard') + '?tab=email_logs')
+                
+        elif 'notification_action' in request.POST:
+            action = request.POST.get('notification_action')
+            if action == 'clear':
+                Notification.objects.all().delete()
+            elif action == 'mark_read':
+                Notification.objects.filter(read=False).update(read=True)
+            elif action == 'mark_single_read':
+                notification_id = request.POST.get('notification_id')
+                if notification_id:
+                    Notification.objects.filter(id=notification_id).update(read=True)
+            return redirect(request.META.get('HTTP_REFERER', 'admin_dashboard'))
 
     search_query = request.GET.get('search_query', '')
     books = Book.objects.all().order_by('-id')
@@ -270,7 +342,8 @@ def admin_dashboard(request):
     total_students = Student.objects.count()
     issued_books_count = Circulation.objects.filter(status='issued').count()
     reserved_books_count = Book.objects.aggregate(Sum('available_quantity'))['available_quantity__sum'] or 0
-    overdue_books_count = Circulation.objects.filter(status='issued', due_date__lt=date.today()).count()
+    overdue_circulations_list = Circulation.objects.filter(status='issued', due_date__lt=date.today()).order_by('due_date')
+    overdue_books_count = overdue_circulations_list.count()
 
     notifications = get_notifications()
     unread_count = Notification.objects.filter(read=False).count()
@@ -371,6 +444,18 @@ def admin_dashboard(request):
     else:
         students_qs = students_qs.order_by('-joined_date')
 
+    audit_logs = AuditLog.objects.all().order_by('-timestamp')
+    try:
+        email_logs = EmailLog.objects.all().order_by('-sent_at')[:100]
+    except Exception:
+        email_logs = []
+
+    overdue_data = {}
+    for circ in overdue_circulations_list:
+        if circ.student.email not in overdue_data:
+            overdue_data[circ.student.email] = []
+        overdue_data[circ.student.email].append(circ.book.title)
+
     context = {
         'books': books,
         'search_query': search_query,
@@ -385,6 +470,7 @@ def admin_dashboard(request):
         'users': User.objects.all().order_by('-id'),
         'circulations': circulations,
         'recent_issued': Circulation.objects.filter(status='issued').order_by('-issue_date')[:5],
+        'overdue_circulations': overdue_circulations_list,
         'penalties': Penalty.objects.all(),
         'lib_settings': get_library_settings(),
         'notifications': notifications,
@@ -393,10 +479,14 @@ def admin_dashboard(request):
         'issue_counts': json.dumps(issue_counts),
         'student_counts': json.dumps(student_counts),
         'revenue_data': json.dumps(revenue_data),
+        'audit_logs': audit_logs[:100],
+        'email_logs': email_logs,
+        'overdue_data_json': json.dumps(overdue_data),
     }
     return render(request, 'admin_library.html', context)
 
 def admin_logout(request):
+    log_audit(request, "logged out of the system.")
     logout(request)
     return redirect('admin_login')
 
@@ -407,6 +497,7 @@ def add_book(request):
         total_qty = request.POST.get('total_quantity')
         avail_qty = request.POST.get('available_quantity')
         image_url = request.POST.get('image_url')
+        location = request.POST.get('location')
         
         # Handle Author (Select existing or Create new)
         author = None
@@ -440,9 +531,10 @@ def add_book(request):
             Book.objects.create(
                 title=title, author=author, publisher=publisher, isbn=isbn,
                 quantity=total_qty, available_quantity=avail_qty,
-                thumbnail_link=image_url
+                thumbnail_link=image_url, location=location
             )
             add_notification(f"Book '{title}' added successfully.")
+            log_audit(request, f"added a new book '{title}' (ISBN: {isbn}).")
         except IntegrityError as e:
             if 'pkey' in str(e) or 'PRIMARY' in str(e):
                 try:
@@ -453,9 +545,10 @@ def add_book(request):
                     Book.objects.create(
                         title=title, author=author, publisher=publisher, isbn=isbn,
                         quantity=total_qty, available_quantity=avail_qty,
-                        thumbnail_link=image_url
+                        thumbnail_link=image_url, location=location
                     )
                     add_notification(f"Book '{title}' added successfully (Database sequence repaired).")
+                    log_audit(request, f"added a new book '{title}' (ISBN: {isbn}).")
                 except Exception as retry_e:
                     add_notification(f"Error adding book: {e}. Retry failed: {retry_e}")
             else:
@@ -469,6 +562,7 @@ def add_author(request):
         bio = request.POST.get('bio')
         if name:
             Author.objects.create(name=name, bio=bio)
+            log_audit(request, f"added a new author '{name}'.")
         return redirect(reverse('admin_dashboard') + '?tab=authors')
     return redirect('admin_dashboard')
 
@@ -477,6 +571,7 @@ def add_publisher(request):
         name = request.POST.get('name')
         if name:
             Publisher.objects.create(name=name)
+            log_audit(request, f"added a new publisher '{name}'.")
         return redirect(reverse('admin_dashboard') + '?tab=publishers')
     return redirect('admin_dashboard')
 
@@ -497,6 +592,7 @@ def add_user(request):
                     user.is_staff = is_superuser # Admins are usually staff
                     user.save()
                     add_notification(f"User '{username}' added successfully.")
+                    log_audit(request, f"added a new user '{username}' (Admin: {is_superuser}).")
                 except Exception as e:
                     add_notification(f"Error adding user: {e}")
         return redirect(reverse('admin_dashboard') + '?tab=users')
@@ -528,6 +624,7 @@ def add_penalty(request):
 
         if student and amount:
             Penalty.objects.create(student=student, book=book, amount=amount, reason=reason or "Penalty")
+            log_audit(request, f"applied a penalty of ₹{amount} to student '{student.name}'.")
         return redirect('admin_dashboard')
 
 def add_student(request):
@@ -538,6 +635,7 @@ def add_student(request):
         address = request.POST.get('address')
         
         Student.objects.create(name=name, email=email, phone=phone, address=address)
+        log_audit(request, f"added a new student '{name}'.")
         return redirect(reverse('admin_dashboard') + '?tab=students')
 
 def edit_book(request):
@@ -550,6 +648,7 @@ def edit_book(request):
         book.quantity = request.POST.get('total_quantity')
         book.available_quantity = request.POST.get('available_quantity')
         book.thumbnail_link = request.POST.get('image_url')
+        book.location = request.POST.get('location')
         
         author_id = request.POST.get('author')
         if author_id:
@@ -560,6 +659,7 @@ def edit_book(request):
             book.publisher = get_object_or_404(Publisher, id=publisher_id)
             
         book.save()
+        log_audit(request, f"updated the details of book '{book.title}'.")
         return redirect(reverse('admin_dashboard') + '?tab=books')
     return redirect(reverse('admin_dashboard') + '?tab=books')
 
@@ -568,6 +668,7 @@ def delete_book(request, book_id):
     book_title = book.title
     book.delete()
     add_notification(f"Book '{book_title}' deleted successfully.")
+    log_audit(request, f"deleted book '{book_title}'.")
     return redirect(reverse('admin_dashboard') + '?tab=books')
 
 def fix_sequences(request):
@@ -598,6 +699,7 @@ def issue_book(request):
                 book.available_quantity -= 1
                 book.save()
                 add_notification(f"Book '{book.title}' issued to {student.name}")
+                log_audit(request, f"issued book '{book.title}' to student '{student.name}'.")
                 
     return redirect(reverse('admin_dashboard') + '?tab=circulations')
 
@@ -629,6 +731,7 @@ def return_book(request):
             
             book.available_quantity += 1
             book.save()
+            log_audit(request, f"processed the return of book '{book.title}' from student '{circulation.student.name}'.")
             
     return redirect(reverse('admin_dashboard') + '?tab=circulations')
 
@@ -636,6 +739,7 @@ def delete_penalty(request):
     if request.method == "POST":
         penalty_id = request.POST.get('penalty_id')
         penalty = get_object_or_404(Penalty, id=penalty_id)
+        log_audit(request, f"deleted a penalty of ₹{penalty.amount} for student '{penalty.student.name}'.")
         penalty.delete()
     return redirect(reverse('admin_dashboard') + '?tab=penalties')
 
@@ -645,6 +749,7 @@ def mark_penalty_paid(request, penalty_id):
         penalty.status = 'Paid'
         penalty.save()
         add_notification(f"Penalty for {penalty.student.name} marked as Paid.")
+        log_audit(request, f"marked a penalty of ₹{penalty.amount} as Paid for student '{penalty.student.name}'.")
     return redirect(reverse('admin_dashboard') + '?tab=penalties')
 
 def edit_user(request):
@@ -667,6 +772,7 @@ def edit_user(request):
         user.is_active = is_active
         
         user.save()
+        log_audit(request, f"updated the profile of user '{user.username}'.")
         return redirect(reverse('admin_dashboard') + '?tab=users')
     return redirect(reverse('admin_dashboard') + '?tab=users')
 
@@ -675,7 +781,9 @@ def delete_user(request):
         user_id = request.POST.get('user_id')
         user = get_object_or_404(User, id=user_id)
         if user != request.user:  # Prevent deleting yourself
+            username = user.username
             user.delete()
+            log_audit(request, f"deleted user '{username}'.")
     return redirect(reverse('admin_dashboard') + '?tab=users')
 
 def edit_publisher(request):
@@ -684,13 +792,16 @@ def edit_publisher(request):
         publisher = get_object_or_404(Publisher, id=publisher_id)
         publisher.name = request.POST.get('name')
         publisher.save()
+        log_audit(request, f"updated publisher '{publisher.name}'.")
     return redirect(reverse('admin_dashboard') + '?tab=publishers')
 
 def delete_publisher(request):
     if request.method == "POST":
         publisher_id = request.POST.get('publisher_id')
         publisher = get_object_or_404(Publisher, id=publisher_id)
+        pub_name = publisher.name
         publisher.delete()
+        log_audit(request, f"deleted publisher '{pub_name}'.")
     return redirect(reverse('admin_dashboard') + '?tab=publishers')
 
 def edit_author(request):
@@ -700,11 +811,14 @@ def edit_author(request):
         author.name = request.POST.get('name')
         author.bio = request.POST.get('bio')
         author.save()
+        log_audit(request, f"updated author '{author.name}'.")
     return redirect(reverse('admin_dashboard') + '?tab=authors')
 
 def delete_author(request, author_id):
     author = get_object_or_404(Author, id=author_id)
+    auth_name = author.name
     author.delete()
+    log_audit(request, f"deleted author '{auth_name}'.")
     return redirect(reverse('admin_dashboard') + '?tab=authors')
 
 def edit_student(request):
@@ -716,13 +830,16 @@ def edit_student(request):
         student.phone = request.POST.get('phone')
         student.address = request.POST.get('address')
         student.save()
+        log_audit(request, f"updated student '{student.name}'.")
     return redirect(reverse('admin_dashboard') + '?tab=students')
 
 def delete_student(request):
     if request.method == "POST":
         student_id = request.POST.get('student_id')
         student = get_object_or_404(Student, id=student_id)
+        stu_name = student.name
         student.delete()
+        log_audit(request, f"deleted student '{stu_name}'.")
     return redirect(reverse('admin_dashboard') + '?tab=students')
 
 def update_settings(request):
@@ -736,7 +853,11 @@ def update_settings(request):
         settings_obj.max_penalty = request.POST.get('max_penalty')
         settings_obj.loan_duration = request.POST.get('loan_duration')
         settings_obj.max_books = request.POST.get('max_books')
+        
+        if hasattr(settings_obj, 'enable_emails'):
+            settings_obj.enable_emails = request.POST.get('enable_emails') == 'on'
         settings_obj.save()
         
         add_notification("Settings updated successfully.")
+        log_audit(request, "updated the library system settings.")
     return redirect(reverse('admin_dashboard') + '?tab=settings')

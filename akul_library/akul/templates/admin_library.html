@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookSphere</title>
+    <title>{{ lib_settings.library_name|default:"BookSphere" }} | BookSphere</title>
     <link rel="stylesheet" href="{% static 'admin_styles.css' %}">
     <link rel="icon" type="image/x-icon" href="{% static 'img/logo.ico' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -171,6 +171,32 @@
             gap: 10px !important;
         }
 
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+            border-radius: 8px;
+            z-index: 1000;
+            min-width: 150px;
+        }
+
+        .profile-dropdown.active {
+            display: block;
+        }
+
+        .profile-dropdown a {
+            display: flex; align-items: center; padding: 12px 16px; color: #dc3545; text-decoration: none; font-weight: 500; transition: background-color 0.2s;
+        }
+
+        .profile-dropdown a:hover {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
     </style>
 </head>
 
@@ -244,6 +270,18 @@
                     </a>
                 </li>
                 <li>
+                    <a href="#" onclick="showPage('audit_logs')" class="nav-link">
+                        <span class="icon">📜</span>
+                        <span>Audit Logs</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showPage('email_logs')" class="nav-link">
+                        <span class="icon">📧</span>
+                        <span>Email Logs</span>
+                    </a>
+                </li>
+                <li>
                     <a href="#" onclick="showPage('settings')" class="nav-link">
                         <span class="icon">⚙️</span>
                         <span>Settings</span>
@@ -252,12 +290,12 @@
             </ul>
         </nav>
         
-        <div class="sidebar-footer">
+        <!-- <div class="sidebar-footer">
             <a href="{% url 'admin_logout' %}" class="nav-link logout-btn">
                 <span class="icon">⏻</span>
                 <span>Logout</span>
             </a>
-        </div>
+        </div> -->
     </div>
 
     <!-- Main Content -->
@@ -269,7 +307,7 @@
                     <img src="{% static 'img/logo.ico' %}" alt="Logo" style="width:58px; height: auto;">
                 </div>
                 <div class="header-text">
-                    <h1>BookSphere</h1>
+                    <h1>{{ lib_settings.library_name|default:"BookSphere" }}</h1>
                     <p>Welcome, {{ user.username }}</p>
                 </div>
             </div>
@@ -284,7 +322,7 @@
                     <span class="notification-badge">{{ unread_count }}</span>
                     {% endif %}
                 </div>
-                <div class="user-profile">
+                <div class="user-profile" onclick="toggleProfileDropdown(event)" style="cursor: pointer;" title="Profile options">
                     <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=4A90E2&color=fff" alt="Admin">
                     <div class="user-info">
                         <span class="user-name" style="color: #000;">{{ user.username }}</span>
@@ -293,6 +331,11 @@
                 </div>
             </div>
         </header>
+
+        <!-- Profile Dropdown -->
+        <div id="profileDropdown" class="profile-dropdown">
+            <a href="{% url 'admin_logout' %}"><span style="margin-right: 10px; font-size: 1.2em;">⏻</span> Logout</a>
+        </div>
 
         <!-- Notification Dropdown -->
         <div class="notification-dropdown" id="notificationDropdown">
@@ -491,7 +534,7 @@
                 <!-- Right Sidebar -->
                 <div class="dashboard-right">
                     <!-- Issued Books -->
-                    <div class="issued-books-section">
+                    <!-- <div class="issued-books-section">
                         <div class="section-header">
                             <h2>Issued Books</h2>
                             <select class="filter-dropdown">
@@ -513,10 +556,35 @@
                             <p style="padding: 15px; text-align: center; color: #6c757d;">No issued books.</p>
                             {% endfor %}
                         </div>
+                    </div> -->
+
+                    <!-- Overdue Books -->
+                    <div class="issued-books-section" style="border-color: #ffcdd2;">
+                        <div class="section-header" style="background-color: #ffffff; border-bottom: 1px solid #ffffff;">
+                            <h2>Overdue Books</h2>
+                        </div>
+                        <div class="issued-books-list">
+                            {% for circ in overdue_circulations|slice:":5" %}
+                            <div class="issued-book-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                                <div>
+                                    <h4 style="margin: 0; font-size: 14px; color: #c62828;">{{ circ.book.title }}</h4>
+                                    <p style="margin: 0; font-size: 12px; color: #666;">Student: {{ circ.student.name }}</p>
+                                </div>
+                                <span style="font-size: 12px; color: #c62828; font-weight: bold;">Due: {{ circ.due_date|date:"M d" }}</span>
+                            </div>
+                            {% empty %}
+                            <p style="padding: 15px; text-align: center; color: #2e7d32; margin: 0;">No overdue books.</p>
+                            {% endfor %}
+                            {% if overdue_books_count > 5 %}
+                            <div style="text-align: center; padding: 10px; background-color: #fafafa; border-top: 1px solid #eee;">
+                                <a href="{% url 'admin_dashboard' %}?tab=circulations&circ_status=overdue" style="font-size: 12px; color: #c62828; text-decoration: none; font-weight: 500;">View all {{ overdue_books_count }} overdues →</a>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <!-- Top Authors -->
-                    <div class="top-authors-section">
+                    <div class="top-authors-section" style="margin-top: 20px;">
                         <div class="section-header">
                             <h2>Top Author</h2>
                             <select class="filter-dropdown">
@@ -565,7 +633,7 @@
                     <thead>
                         <tr>
                             <th>Cover</th>
-                            <th>Title</th>
+                            <th>Title & Location</th>
                             <th>Author</th>
                             <th>Actions</th>
                         </tr>
@@ -580,10 +648,15 @@
                                 <div style="width: 40px; height: 60px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 20px;">📖</div>
                                 {% endif %}
                             </td>
-                            <td>{{ book.title }}</td>
+                            <td>
+                                <strong>{{ book.title }}</strong><br>
+                                <span style="font-size: 0.85em; color: #666;">
+                                    {% if book.location %}📍 {{ book.location }}{% else %}Location not set{% endif %}
+                                </span>
+                            </td>
                             <td>{{ book.author.name|default:book.author }}</td>
                             <td>
-                                <button class="action-btn edit-btn" onclick="openEditBookModal('{{ book.id }}', '{{ book.title|escapejs }}', '{{ book.author.id }}', '{{ book.isbn|escapejs }}', '{{ book.total_quantity }}', '{{ book.available_quantity }}', '{{ book.thumbnail_link|escapejs }}')" style="margin-right: 5px;">✎</button>
+                                <button class="action-btn edit-btn" onclick="openEditBookModal('{{ book.id }}', '{{ book.title|escapejs }}', '{{ book.author.id }}', '{{ book.isbn|escapejs }}', '{{ book.total_quantity }}', '{{ book.available_quantity }}', '{{ book.thumbnail_link|escapejs }}', '{{ book.location|escapejs }}')" style="margin-right: 5px;">✎</button>
                                 <form method="POST" action="{% url 'delete_book' book.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this book?');">
                                     {% csrf_token %}
                                     <button type="submit" class="action-btn delete-btn">🗑</button>
@@ -790,6 +863,79 @@
             </div>
         </div>
 
+        <!-- Audit Logs Page -->
+        <div id="audit_logs" class="page">
+            <div class="page-header">
+                <h1>Audit Logs</h1>
+                <p style="color: #666; margin-top: 5px;">System activity tracking and accountability.</p>
+            </div>
+            <div class="users-table-container" style="padding: 0;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Librarian</th>
+                            <th>Action Performed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in audit_logs %}
+                        <tr>
+                            <td style="font-family: monospace; font-size: 13px; color: #666; padding: 15px 20px;">{{ log.timestamp|date:"M d, Y I:i A" }}</td>
+                            <td><strong>{{ log.username }}</strong></td>
+                            <td>{{ log.action }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 30px; color: #666;">No audit logs recorded yet. Perform some actions in the system to see them here!</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Email Logs Page -->
+        <div id="email_logs" class="page">
+            <div class="page-header">
+                <h1>Email Logs</h1>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" onclick="openEmailStudentModal('')">+ Compose Email</button>
+                    <form method="POST" action="{% url 'admin_dashboard' %}" style="margin: 0;" onsubmit="return confirm('Are you sure you want to send warning emails to ALL students with overdue books?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="email_all_overdue">
+                        <button type="submit" class="btn-primary" style="background-color: #dc3545;">Send All Overdue Warnings</button>
+                    </form>
+                </div>
+            </div>
+            <div class="users-table-container" style="padding: 0;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Sent At</th>
+                            <th>Recipient</th>
+                            <th>Subject</th>
+                            <th>Message Snippet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in email_logs %}
+                        <tr>
+                            <td style="font-family: monospace; font-size: 13px; color: #666; padding: 15px 20px;">{{ log.sent_at|date:"M d, Y I:i A" }}</td>
+                            <td><strong>{{ log.recipient }}</strong></td>
+                            <td>{{ log.subject }}</td>
+                            <td><div style="font-family: inherit; margin: 0; white-space: pre-wrap; font-size: 12px; color: #555; max-height: 80px; overflow-y: auto;">{{ log.message }}</div></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 30px; color: #666;">No automated emails have been recorded yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Settings Page -->
         <div id="settings" class="page">
             <div class="settings-content">
@@ -832,6 +978,10 @@
                             <div class="setting-item">
                                 <label>Max Books per Student</label>
                                 <input type="number" name="max_books" value="{{ lib_settings.max_books }}" class="setting-input">
+                            </div>
+                            <div class="setting-item" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+                                <input type="checkbox" id="enableEmails" name="enable_emails" {% if lib_settings.enable_emails %}checked{% endif %} style="width: auto; margin: 0; cursor: pointer;">
+                                <label for="enableEmails" style="margin: 0; cursor: pointer;">Enable Automated Email Notifications</label>
                             </div>
                         </div>
                         <!-- <div class="setting-card">
@@ -1036,6 +1186,7 @@
                             <td>{{ student.phone }}</td>
                             <td>{{ student.joined_date|date:"M d, Y" }}</td>
                             <td>
+                                <button class="action-btn edit-btn" onclick="openEmailStudentModal('{{ student.email|escapejs }}')" style="background-color: #17a2b8; margin-right: 5px;" title="Send Email">✉</button>
                                 <button class="action-btn edit-btn" onclick="openEditStudentModal('{{ student.id }}', '{{ student.name|escapejs }}', '{{ student.email|escapejs }}', '{{ student.phone|escapejs }}', '{{ student.address|escapejs }}')" style="margin-right: 5px;">✎</button>
                                 <form method="POST" action="{% url 'delete_student' %}" style="display:inline;">
                                     {% csrf_token %}
@@ -1194,7 +1345,7 @@
                 {% csrf_token %}
                 <div class="setting-item">
                     <label>Book Title</label>
-                    <input type="text" name="title" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <input type="text" id="addBookTitle" name="title" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
                 </div>
                 <div class="setting-item">
                     <label>Author</label>
@@ -1205,7 +1356,7 @@
                             <option value="{{ author.id }}">{{ author.name }}</option>
                             {% endfor %}
                         </select>
-                        <input type="text" name="new_author" placeholder="Or New Author" class="setting-input" style="flex: 1; margin-bottom: 15px; padding: 10px;">
+                        <input type="text" id="addBookNewAuthor" name="new_author" placeholder="Or New Author" class="setting-input" style="flex: 1; margin-bottom: 15px; padding: 10px;">
                     </div>
                 </div>
                 <div class="setting-item">
@@ -1217,18 +1368,26 @@
                             <option value="{{ publisher.id }}">{{ publisher.name }}</option>
                             {% endfor %}
                         </select>
-                        <input type="text" name="new_publisher" placeholder="Or New Publisher" class="setting-input" style="flex: 1; margin-bottom: 15px; padding: 10px;">
+                        <input type="text" id="addBookNewPublisher" name="new_publisher" placeholder="Or New Publisher" class="setting-input" style="flex: 1; margin-bottom: 15px; padding: 10px;">
                     </div>
                 </div>
                 <div class="setting-item">
                     <label>ISBN</label>
-                    <input type="text" name="isbn" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                        <input type="text" id="addBookIsbnInput" name="isbn" required class="setting-input" style="flex: 1; padding: 10px;" placeholder="Enter ISBN to auto-fill">
+                        <button type="button" class="btn-primary" onclick="fetchBookDetails()" style="padding: 10px 15px; white-space: nowrap;">Auto-fill</button>
+                    </div>
+                    <small id="isbnFeedback" style="color: #666; display: block; margin-bottom: 15px; min-height: 18px;"></small>
                 </div>
                 <div class="setting-item" style="display: flex; gap: 10px;">
                     <div style="flex: 1;"><label>Total Quantity</label><input type="number" name="total_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
                     <div style="flex: 1;"><label>Available Quantity</label><input type="number" name="available_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
                 </div>
-                <div class="setting-item"><label>Image URL</label><input type="url" name="image_url" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                <div class="setting-item"><label>Image URL</label><input type="url" id="addBookImageUrl" name="image_url" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                <div class="setting-item">
+                    <label>Rack / Shelf Location</label>
+                    <input type="text" id="addBookLocation" name="location" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;" placeholder="e.g., Aisle 4, Shelf B">
+                </div>
                 <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Book</button>
             </form>
         </div>
@@ -1264,6 +1423,10 @@
                     <div style="flex: 1;"><label>Available Quantity</label><input type="number" id="editBookAvailQty" name="available_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
                 </div>
                 <div class="setting-item"><label>Image URL</label><input type="url" id="editBookImage" name="image_url" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                <div class="setting-item">
+                    <label>Rack / Shelf Location</label>
+                    <input type="text" id="editBookLocation" name="location" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                </div>
                 <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Book</button>
             </form>
         </div>
@@ -1474,6 +1637,51 @@
         </div>
     </div>
 
+    <!-- Email Student Modal -->
+    <div id="emailStudentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEmailStudentModal()">&times;</span>
+            <h2>Send Email to Student</h2>
+            <form method="POST" action="{% url 'admin_dashboard' %}" style="margin-top: 20px;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="email_student">
+                <div class="setting-item">
+                    <label>Recipient Student</label>
+                    <select id="emailStudentAddress" name="recipient_email" required class="setting-input" style="width: 100%; margin-bottom: 10px; padding: 10px;" onchange="updateStudentEmailContext()">
+                        <option value="">-- Select a Student --</option>
+                        {% for student in students %}
+                        <option value="{{ student.email }}" data-name="{{ student.name|escapejs }}">{{ student.name }} ({{ student.email }})</option>
+                        {% endfor %}
+                        <option value="custom">-- Other (Type Email) --</option>
+                    </select>
+                    <input type="email" id="customEmailAddress" name="custom_email" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px; display: none;" placeholder="Enter custom email address">
+                </div>
+                <div id="overdueBooksArea" style="display: none; margin-bottom: 15px; background: #fff8e1; padding: 10px; border-left: 4px solid #ffc107;">
+                    <label style="color: #d32f2f; font-weight: bold; font-size: 13px;">Overdue Books:</label>
+                    <ul id="overdueBooksList" style="margin: 5px 0 0; padding-left: 20px; color: #c62828; font-size: 13px;"></ul>
+                </div>
+                <div class="setting-item">
+                    <label>Select Template</label>
+                    <select id="emailTemplateSelector" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;" onchange="applyEmailTemplate()">
+                        <option value="custom">-- Custom Message --</option>
+                        <option value="welcome">Welcome to {{ lib_settings.library_name }}</option>
+                        <option value="overdue">Overdue Notice</option>
+                        <option value="reminder">Due Date Reminder</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Subject</label>
+                    <input type="text" id="emailSubject" name="email_subject" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;" placeholder="e.g. Important Notice Regarding Library Books">
+                </div>
+                <div class="setting-item">
+                    <label>Message</label>
+                    <textarea id="emailMessage" name="email_message" rows="6" required class="setting-input" style="width: 100%; font-family: inherit; padding: 10px; margin-bottom: 15px;" placeholder="Type your message here..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Send Email</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Issue Book Modal -->
     <div id="issueBookModal" class="modal">
         <div class="modal-content">
@@ -1550,6 +1758,12 @@
             <div id="qr-reader" style="width: 100%; margin-top: 20px;"></div>
         </div>
     </div>
+
+    <script>
+        const overdueData = {{ overdue_data_json|safe }};
+        const currentAdminName = "{{ user.username|escapejs }}";
+        const currentLibraryName = "{{ lib_settings.library_name|escapejs }}";
+    </script>
 
     <script src="{% static 'admin_script.js' %}?v=1.3"></script>
 
@@ -1683,6 +1897,109 @@
 
         function closeEditStudentModal() {
             document.getElementById('editStudentModal').style.display = 'none';
+        }
+
+        function openEmailStudentModal(email) {
+            const studentSelect = document.getElementById('emailStudentAddress');
+            const customEmailInput = document.getElementById('customEmailAddress');
+            
+            studentSelect.value = '';
+            customEmailInput.value = '';
+            customEmailInput.style.display = 'none';
+            document.getElementById('emailTemplateSelector').value = 'custom';
+            document.getElementById('emailSubject').value = '';
+            document.getElementById('emailMessage').value = '';
+            document.getElementById('overdueBooksArea').style.display = 'none';
+
+            if (email) {
+                let optionExists = false;
+                for (let i = 0; i < studentSelect.options.length; i++) {
+                    if (studentSelect.options[i].value === email) {
+                        studentSelect.value = email;
+                        optionExists = true;
+                        break;
+                    }
+                }
+                if (!optionExists) {
+                    studentSelect.value = 'custom';
+                    customEmailInput.value = email;
+                    customEmailInput.style.display = 'block';
+                }
+            }
+            
+            updateStudentEmailContext();
+            document.getElementById('emailStudentModal').style.display = 'block';
+        }
+
+        function updateStudentEmailContext() {
+            const studentSelect = document.getElementById('emailStudentAddress');
+            const customEmailInput = document.getElementById('customEmailAddress');
+            const overdueArea = document.getElementById('overdueBooksArea');
+            const overdueList = document.getElementById('overdueBooksList');
+            
+            if (studentSelect.value === 'custom') {
+                customEmailInput.style.display = 'block';
+                customEmailInput.required = true;
+                overdueArea.style.display = 'none';
+            } else {
+                customEmailInput.style.display = 'none';
+                customEmailInput.required = false;
+                
+                const email = studentSelect.value;
+                if (typeof overdueData !== 'undefined' && email && overdueData[email] && overdueData[email].length > 0) {
+                    overdueArea.style.display = 'block';
+                    overdueList.innerHTML = '';
+                    overdueData[email].forEach(function(book) {
+                        let li = document.createElement('li');
+                        li.innerText = book;
+                        overdueList.appendChild(li);
+                    });
+                } else {
+                    overdueArea.style.display = 'none';
+                }
+            }
+            
+            const template = document.getElementById('emailTemplateSelector').value;
+            if (template !== 'custom') {
+                applyEmailTemplate();
+            }
+        }
+
+        function applyEmailTemplate() {
+            const template = document.getElementById('emailTemplateSelector').value;
+            const subject = document.getElementById('emailSubject');
+            const message = document.getElementById('emailMessage');
+            
+            const studentSelect = document.getElementById('emailStudentAddress');
+            let studentName = "Student";
+            let email = studentSelect.value;
+            
+            if (studentSelect.selectedIndex > 0 && studentSelect.value !== 'custom') {
+                studentName = studentSelect.options[studentSelect.selectedIndex].getAttribute('data-name');
+            }
+            
+            let adminName = typeof currentAdminName !== 'undefined' ? currentAdminName : 'Admin';
+            let libraryName = typeof currentLibraryName !== 'undefined' ? currentLibraryName : 'Library';
+            
+            let booksText = "";
+            if (typeof overdueData !== 'undefined' && email && overdueData[email] && overdueData[email].length > 0) {
+                booksText = "\n\nOverdue Books:\n- " + overdueData[email].join('\n- ');
+            }
+
+            if (template === 'welcome') {
+                subject.value = `Welcome to ${libraryName}!`;
+                message.value = `Dear ${studentName},\n\nWelcome to ${libraryName}! Your account has been successfully created. You can now visit the library and start borrowing books from our vast collection.\n\nPlease let us know if you have any questions.\n\nRegards,\n${adminName}`;
+            } else if (template === 'overdue') {
+                subject.value = 'URGENT: Overdue Book Notice';
+                message.value = `Dear ${studentName},\n\nThis is an important notice regarding one or more books on your account that are currently overdue.${booksText}\n\nPlease return them as soon as possible to avoid any further penalties.\n\nRegards,\n${adminName}`;
+            } else if (template === 'reminder') {
+                subject.value = 'Reminder: Book Due Soon';
+                message.value = `Dear ${studentName},\n\nThis is a friendly reminder that a book you borrowed is due very soon. Please ensure you return it on or before the due date to avoid late fees.\n\nRegards,\n${adminName}`;
+            }
+        }
+
+        function closeEmailStudentModal() {
+            document.getElementById('emailStudentModal').style.display = 'none';
         }
 
         // Author Modal Functions

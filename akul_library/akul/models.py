@@ -24,6 +24,7 @@ class Book(models.Model):
     quantity = models.IntegerField(default=1)
     available_quantity = models.IntegerField(default=1)
     thumbnail_link = models.URLField(max_length=500, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True, help_text="e.g., Aisle 4, Shelf B")
 
     def __str__(self):
         return self.title
@@ -95,6 +96,7 @@ class LibrarySettings(models.Model):
     max_penalty = models.DecimalField(max_digits=8, decimal_places=2, default=500.00)
     loan_duration = models.IntegerField(default=14)
     max_books = models.IntegerField(default=3)
+    enable_emails = models.BooleanField(default=True)
 
     def __str__(self):
         return "Library Settings"
@@ -106,3 +108,20 @@ class Notification(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+class AuditLog(models.Model):
+    username = models.CharField(max_length=150)
+    action = models.CharField(max_length=500)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.username} - {self.action} at {self.timestamp}"
+
+class EmailLog(models.Model):
+    recipient = models.EmailField()
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.subject} to {self.recipient}"

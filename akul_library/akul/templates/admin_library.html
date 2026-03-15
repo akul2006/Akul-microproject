@@ -908,6 +908,16 @@
                     </form>
                 </div>
             </div>
+            
+            <form method="GET" action="{% url 'admin_dashboard' %}" style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="hidden" name="tab" value="email_logs">
+                <input type="text" name="email_search" value="{{ request.GET.email_search|default:'' }}" placeholder="Search by recipient, subject, or message..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                <button type="submit" class="btn-primary" style="padding: 12px 25px;">Search</button>
+                {% if request.GET.email_search %}
+                <a href="{% url 'admin_dashboard' %}?tab=email_logs" class="btn-primary" style="padding: 12px 25px; background-color: #6c757d; text-decoration: none; display: flex; align-items: center; justify-content: center;">Clear</a>
+                {% endif %}
+            </form>
+
             <div class="users-table-container" style="padding: 0;">
                 <table class="data-table">
                     <thead>
@@ -1089,54 +1099,6 @@
             </div>
         </div>
 
-        <!-- <div id="requests" class="page">
-            <div class="page-header">
-                <h1>Book Requests</h1>
-            </div>
-            <div class="requests-table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Member</th>
-                            <th>Book</th>
-                            <th>Request Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="requestsTableBody">
-                        {% for request in requests %}
-                        <tr>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=random" alt="{{ request.user.username }}" style="width: 32px; height: 32px; border-radius: 50%;">
-                                    {{ request.user.username }}
-                                </div>
-                            </td>
-                            <td>{{ request.book.title }}</td>
-                            <td>{{ request.request_date|date:"M d, Y" }}</td>
-                            <td>
-                                <span style="padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; background: {% if request.status == 'Approved' %}#e6f4ea{% elif request.status == 'Pending' %}#fff8e1{% else %}#fce8e6{% endif %}; color: {% if request.status == 'Approved' %}#1e7e34{% elif request.status == 'Pending' %}#f57f17{% else %}#c5221f{% endif %};">
-                                    {{ request.status }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if request.status == 'Pending' %}
-                                <button class="action-btn approve-btn" title="Approve" style="color: #28a745;">✓</button>
-                                <button class="action-btn reject-btn" title="Reject" style="color: #dc3545;">✕</button>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px; color: #666;">No book requests found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div> -->
-
         <div id="students" class="page">
             <div class="page-header">
                 <h1>Students Management</h1>
@@ -1267,19 +1229,12 @@
             </div>
         </div>
 
-        <!-- <div id="roles" class="page">
-            <h1>Roles & Permissions</h1>
-            <p>Configure user roles and access permissions.</p>
-        </div>
-    </div> -->
-
     <!-- Author Bio Modal -->
     <div id="authorBioModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAuthorModal()">&times;</span>
             <h2 id="modalAuthorName" style="margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Author Name</h2>
             <div id="modalAuthorBio" style="line-height: 1.6; color: #333; font-size: 16px;">
-                <!-- Bio will be populated here -->
             </div>
         </div>
     </div>
@@ -1471,7 +1426,6 @@
             <span class="close-modal" onclick="closePublisherModal()">&times;</span>
             <h2 id="modalPublisherName" style="margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Publisher Name</h2>
             <div id="modalBooksList" style="max-height: 400px; overflow-y: auto;">
-                <!-- Books will be populated here -->
             </div>
         </div>
     </div>
@@ -1856,215 +1810,6 @@
                 });
             }
         });
-    </script>
-
-    {% if search_query %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            showPage('books');
-        });
-    </script>
-    {% endif %}
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tab = urlParams.get('tab');
-            if (tab) {
-                showPage(tab);
-            }
-        });
-    </script>
-
-    <script>
-        // Student Modal Functions
-        function openAddStudentModal() {
-            document.getElementById('addStudentModal').style.display = 'block';
-        }
-
-        function closeAddStudentModal() {
-            document.getElementById('addStudentModal').style.display = 'none';
-        }
-
-        function openEditStudentModal(id, name, email, phone, address) {
-            document.getElementById('editStudentId').value = id;
-            document.getElementById('editStudentName').value = name;
-            document.getElementById('editStudentEmail').value = email;
-            document.getElementById('editStudentPhone').value = phone;
-            document.getElementById('editStudentAddress').value = address;
-            document.getElementById('editStudentModal').style.display = 'block';
-        }
-
-        function closeEditStudentModal() {
-            document.getElementById('editStudentModal').style.display = 'none';
-        }
-
-        function openEmailStudentModal(email) {
-            const studentSelect = document.getElementById('emailStudentAddress');
-            const customEmailInput = document.getElementById('customEmailAddress');
-            
-            studentSelect.value = '';
-            customEmailInput.value = '';
-            customEmailInput.style.display = 'none';
-            document.getElementById('emailTemplateSelector').value = 'custom';
-            document.getElementById('emailSubject').value = '';
-            document.getElementById('emailMessage').value = '';
-            document.getElementById('overdueBooksArea').style.display = 'none';
-
-            if (email) {
-                let optionExists = false;
-                for (let i = 0; i < studentSelect.options.length; i++) {
-                    if (studentSelect.options[i].value === email) {
-                        studentSelect.value = email;
-                        optionExists = true;
-                        break;
-                    }
-                }
-                if (!optionExists) {
-                    studentSelect.value = 'custom';
-                    customEmailInput.value = email;
-                    customEmailInput.style.display = 'block';
-                }
-            }
-            
-            updateStudentEmailContext();
-            document.getElementById('emailStudentModal').style.display = 'block';
-        }
-
-        function updateStudentEmailContext() {
-            const studentSelect = document.getElementById('emailStudentAddress');
-            const customEmailInput = document.getElementById('customEmailAddress');
-            const overdueArea = document.getElementById('overdueBooksArea');
-            const overdueList = document.getElementById('overdueBooksList');
-            
-            if (studentSelect.value === 'custom') {
-                customEmailInput.style.display = 'block';
-                customEmailInput.required = true;
-                overdueArea.style.display = 'none';
-            } else {
-                customEmailInput.style.display = 'none';
-                customEmailInput.required = false;
-                
-                const email = studentSelect.value;
-                if (typeof overdueData !== 'undefined' && email && overdueData[email] && overdueData[email].length > 0) {
-                    overdueArea.style.display = 'block';
-                    overdueList.innerHTML = '';
-                    overdueData[email].forEach(function(book) {
-                        let li = document.createElement('li');
-                        li.innerText = book;
-                        overdueList.appendChild(li);
-                    });
-                } else {
-                    overdueArea.style.display = 'none';
-                }
-            }
-            
-            const template = document.getElementById('emailTemplateSelector').value;
-            if (template !== 'custom') {
-                applyEmailTemplate();
-            }
-        }
-
-        function applyEmailTemplate() {
-            const template = document.getElementById('emailTemplateSelector').value;
-            const subject = document.getElementById('emailSubject');
-            const message = document.getElementById('emailMessage');
-            
-            const studentSelect = document.getElementById('emailStudentAddress');
-            let studentName = "Student";
-            let email = studentSelect.value;
-            
-            if (studentSelect.selectedIndex > 0 && studentSelect.value !== 'custom') {
-                studentName = studentSelect.options[studentSelect.selectedIndex].getAttribute('data-name');
-            }
-            
-            let adminName = typeof currentAdminName !== 'undefined' ? currentAdminName : 'Admin';
-            let libraryName = typeof currentLibraryName !== 'undefined' ? currentLibraryName : 'Library';
-            
-            let booksText = "";
-            if (typeof overdueData !== 'undefined' && email && overdueData[email] && overdueData[email].length > 0) {
-                booksText = "\n\nOverdue Books:\n- " + overdueData[email].join('\n- ');
-            }
-
-            if (template === 'welcome') {
-                subject.value = `Welcome to ${libraryName}!`;
-                message.value = `Dear ${studentName},\n\nWelcome to ${libraryName}! Your account has been successfully created. You can now visit the library and start borrowing books from our vast collection.\n\nPlease let us know if you have any questions.\n\nRegards,\n${adminName}`;
-            } else if (template === 'overdue') {
-                subject.value = 'URGENT: Overdue Book Notice';
-                message.value = `Dear ${studentName},\n\nThis is an important notice regarding one or more books on your account that are currently overdue.${booksText}\n\nPlease return them as soon as possible to avoid any further penalties.\n\nRegards,\n${adminName}`;
-            } else if (template === 'reminder') {
-                subject.value = 'Reminder: Book Due Soon';
-                message.value = `Dear ${studentName},\n\nThis is a friendly reminder that a book you borrowed is due very soon. Please ensure you return it on or before the due date to avoid late fees.\n\nRegards,\n${adminName}`;
-            }
-        }
-
-        function closeEmailStudentModal() {
-            document.getElementById('emailStudentModal').style.display = 'none';
-        }
-
-        // Author Modal Functions
-        function openAuthorBooksModal(element) {
-            const row = element.closest('tr');
-            const authorName = row.querySelector('.author-name-text').innerText;
-            const booksContent = element.parentElement.querySelector('.author-books-data').innerHTML;
-            
-            document.getElementById('modalAuthorBooksName').innerText = authorName;
-            document.getElementById('modalAuthorBooksList').innerHTML = booksContent;
-            document.getElementById('authorBooksModal').style.display = 'block';
-        }
-
-        function closeAuthorBooksModal() {
-            document.getElementById('authorBooksModal').style.display = 'none';
-        }
-
-        function openAuthorModal(element) {
-            const authorName = element.querySelector('.author-name-text').innerText;
-            const bio = element.querySelector('.author-bio-data').innerHTML;
-            document.getElementById('modalAuthorName').innerText = authorName;
-            document.getElementById('modalAuthorBio').innerHTML = bio;
-            document.getElementById('authorBioModal').style.display = 'block';
-        }
-
-        function closeAuthorModal() {
-            document.getElementById('authorBioModal').style.display = 'none';
-        }
-
-        function openPublisherBooksModal(element) {
-            const row = element.closest('tr');
-            const publisherName = row.querySelector('.publisher-name-text').innerText;
-            const booksContent = element.parentElement.querySelector('.publisher-books-data').innerHTML;
-            
-            document.getElementById('modalPublisherName').innerText = publisherName;
-            document.getElementById('modalBooksList').innerHTML = booksContent;
-            document.getElementById('publisherBooksModal').style.display = 'block';
-        }
-
-        function closePublisherModal() {
-            document.getElementById('publisherBooksModal').style.display = 'none';
-        }
-
-        function openGenerateReportModal() {
-            document.getElementById('generateReportModal').style.display = 'block';
-        }
-
-        function closeGenerateReportModal() {
-            document.getElementById('generateReportModal').style.display = 'none';
-            document.querySelector('#generateReportModal input[name="start_date"]').value = '';
-            document.querySelector('#generateReportModal input[name="end_date"]').value = '';
-            const allTimeCheckbox = document.getElementById('allTimeCheckbox');
-            if (allTimeCheckbox) {
-                allTimeCheckbox.checked = false;
-                toggleDateInputs(allTimeCheckbox);
-            }
-        }
-
-        function toggleDateInputs(checkbox) {
-            const dateInputs = checkbox.closest('form').querySelectorAll('input[type="date"]');
-            dateInputs.forEach(input => {
-                input.disabled = checkbox.checked;
-                if (checkbox.checked) input.value = '';
-            });
-        }
     </script>
 
 </body>

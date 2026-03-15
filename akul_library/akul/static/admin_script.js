@@ -1,4 +1,3 @@
-// Initialize on load
 function checkHash() {
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
@@ -7,12 +6,10 @@ function checkHash() {
     if (tab && document.getElementById(tab)) {
         showPage(tab);
         
-        // Auto-open Issue Modal if triggered by QR Code
         if (tab === 'circulations' && openIssue === 'true') {
             const isbn = urlParams.get('isbn');
             openIssueBookModal();
             
-            // Auto-fill Book
             const bookSelect = document.querySelector('#issueBookModal select[name="book"]');
             if(bookSelect && isbn) {
                 const cleanIsbn = isbn.replace(/[^0-9X]/gi, '');
@@ -23,7 +20,6 @@ function checkHash() {
                 if (option) bookSelect.value = option.value;
             }
             
-            // Auto-fill Date (Today)
             const dateInput = document.querySelector('#issueBookModal input[name="issue_date"]');
             if(dateInput) {
                 dateInput.value = new Date().toISOString().split('T')[0];
@@ -41,7 +37,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', checkHash);
-// Check immediately in case the script runs after DOMContentLoaded
 checkHash();
 
 window.addEventListener('popstate', function() {
@@ -52,20 +47,15 @@ window.addEventListener('popstate', function() {
     }
 });
 
-// Page Navigation
 function showPage(pageName) {
-    // Hide all pages
     const pages = document.querySelectorAll('.page');
     pages.forEach(page => page.classList.remove('active'));
 
-    // Remove active class from all nav links
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => link.classList.remove('active'));
 
-    // Show selected page
     document.getElementById(pageName).classList.add('active');
 
-    // Add active class to corresponding nav link
     navLinks.forEach(link => {
         const onclick = link.getAttribute('onclick');
         if (onclick && onclick.includes("'" + pageName + "'")) {
@@ -73,7 +63,6 @@ function showPage(pageName) {
         }
     });
 
-    // Update URL to keep track of current tab
     const url = new URL(window.location);
     if (url.searchParams.get('tab') !== pageName) {
         url.searchParams.set('tab', pageName);
@@ -82,7 +71,6 @@ function showPage(pageName) {
     }
 }
 
-// Notification Logic
 function toggleNotifications(event) {
     event.stopPropagation();
     const dropdown = document.getElementById('notificationDropdown');
@@ -125,13 +113,17 @@ function closePublisherModal() {
     document.getElementById('publisherBooksModal').style.display = "none";
 }
 
-// Author Modal Functions
 function openAddAuthorModal() {
     document.getElementById('addAuthorModal').style.display = "block";
 }
 
 function closeAddAuthorModal() {
-    document.getElementById('addAuthorModal').style.display = "none";
+    const modal = document.getElementById('addAuthorModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
 function openEditAuthorModal(id, name, bio) {
@@ -142,7 +134,12 @@ function openEditAuthorModal(id, name, bio) {
 }
 
 function closeEditAuthorModal() {
-    document.getElementById('editAuthorModal').style.display = "none";
+    const modal = document.getElementById('editAuthorModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
 function deleteAuthor(id) {
@@ -166,13 +163,31 @@ function closeAuthorBooksModal() {
     document.getElementById('authorBooksModal').style.display = "none";
 }
 
-// Book Modal Functions
+function openAuthorModal(element) {
+    const authorName = element.querySelector('.author-name-text').innerText;
+    const bio = element.querySelector('.author-bio-data').innerHTML;
+    document.getElementById('modalAuthorName').innerText = authorName;
+    document.getElementById('modalAuthorBio').innerHTML = bio;
+    document.getElementById('authorBioModal').style.display = 'block';
+}
+
+function closeAuthorModal() {
+    document.getElementById('authorBioModal').style.display = 'none';
+}
+
 function openAddBookModal() {
     document.getElementById('addBookModal').style.display = "block";
 }
 
 function closeAddBookModal() {
-    document.getElementById('addBookModal').style.display = "none";
+    const modal = document.getElementById('addBookModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+        const feedback = document.getElementById('isbnFeedback');
+        if (feedback) feedback.innerText = '';
+    }
 }
 
 async function fetchBookDetails() {
@@ -271,7 +286,12 @@ function openEditBookModal(id, title, authorId, isbn, totalQty, availQty, imageU
 }
 
 function closeEditBookModal() {
-    document.getElementById('editBookModal').style.display = "none";
+    const modal = document.getElementById('editBookModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
 function deleteBook(id) {
@@ -285,7 +305,12 @@ function openAddPublisherModal() {
 }
 
 function closeAddPublisherModal() {
-    document.getElementById('addPublisherModal').style.display = "none";
+    const modal = document.getElementById('addPublisherModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
 function openEditPublisherModal(id, name) {
@@ -295,7 +320,12 @@ function openEditPublisherModal(id, name) {
 }
 
 function closeEditPublisherModal() {
-    document.getElementById('editPublisherModal').style.display = "none";
+    const modal = document.getElementById('editPublisherModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
 // User Modal Functions
@@ -304,16 +334,19 @@ function openAddUserModal() {
 }
 
 function closeAddUserModal() {
-    document.getElementById('addUserModal').style.display = "none";
+    const modal = document.getElementById('addUserModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
-// Edit User Modal Functions
 function openEditUserModal(id, username, email, isSuperuser, isActive) {
     document.getElementById('editUserId').value = id;
     document.getElementById('editUserUsername').value = username;
     document.getElementById('editUserEmail').value = email;
     
-    // Convert Python boolean strings to JS booleans/strings
     const isAdmin = (isSuperuser === 'True' || isSuperuser === 'true');
     const isActiveBool = (isActive === 'True' || isActive === 'true');
 
@@ -324,19 +357,27 @@ function openEditUserModal(id, username, email, isSuperuser, isActive) {
 }
 
 function closeEditUserModal() {
-    document.getElementById('editUserModal').style.display = "none";
+    const modal = document.getElementById('editUserModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
-// Penalty Modal Functions
 function openAddPenaltyModal() {
     document.getElementById('addPenaltyModal').style.display = "block";
 }
 
 function closeAddPenaltyModal() {
-    document.getElementById('addPenaltyModal').style.display = "none";
+    const modal = document.getElementById('addPenaltyModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
-// Issue Book Modal Functions
 function openIssueBookModal() {
     const modal = document.getElementById('issueBookModal');
     if (modal) {
@@ -347,16 +388,25 @@ function openIssueBookModal() {
 }
 
 function closeIssueBookModal() {
-    document.getElementById('issueBookModal').style.display = "none";
+    const modal = document.getElementById('issueBookModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
-// Member Modal Functions
 function openAddMemberModal() {
     document.getElementById('addMemberModal').style.display = "block";
 }
 
 function closeAddMemberModal() {
-    document.getElementById('addMemberModal').style.display = "none";
+    const modal = document.getElementById('addMemberModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
 function openEditMemberModal(id, name, email, phone, address) {
@@ -369,7 +419,43 @@ function openEditMemberModal(id, name, email, phone, address) {
 }
 
 function closeEditMemberModal() {
-    document.getElementById('editMemberModal').style.display = "none";
+    const modal = document.getElementById('editMemberModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
+}
+
+function openAddStudentModal() {
+    document.getElementById('addStudentModal').style.display = 'block';
+}
+
+function closeAddStudentModal() {
+    const modal = document.getElementById('addStudentModal');
+    if (modal) {
+        modal.style.display = 'none';
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
+}
+
+function openEditStudentModal(id, name, email, phone, address) {
+    document.getElementById('editStudentId').value = id;
+    document.getElementById('editStudentName').value = name;
+    document.getElementById('editStudentEmail').value = email;
+    document.getElementById('editStudentPhone').value = phone;
+    document.getElementById('editStudentAddress').value = address;
+    document.getElementById('editStudentModal').style.display = 'block';
+}
+
+function closeEditStudentModal() {
+    const modal = document.getElementById('editStudentModal');
+    if (modal) {
+        modal.style.display = 'none';
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
 function openEmailStudentModal(email) {
@@ -487,7 +573,12 @@ function applyEmailTemplate() {
 }
 
 function closeEmailStudentModal() {
-    document.getElementById('emailStudentModal').style.display = "none";
+    const modal = document.getElementById('emailStudentModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
 function openGenerateReportModal() {
@@ -495,16 +586,18 @@ function openGenerateReportModal() {
 }
 
 function closeGenerateReportModal() {
-    document.getElementById('generateReportModal').style.display = "none";
-    document.querySelector('#generateReportModal input[name="start_date"]').value = '';
-    document.querySelector('#generateReportModal input[name="end_date"]').value = '';
-    const allTimeCheckbox = document.getElementById('allTimeCheckbox');
-    if (allTimeCheckbox) {
-        allTimeCheckbox.checked = false;
-        toggleDateInputs(allTimeCheckbox);
+    const modal = document.getElementById('generateReportModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+        const allTimeCheckbox = document.getElementById('allTimeCheckbox');
+        if (allTimeCheckbox) {
+            allTimeCheckbox.checked = false;
+            toggleDateInputs(allTimeCheckbox);
+        }
     }
 }
-
 
 let html5QrcodeScanner;
 
@@ -579,57 +672,56 @@ window.onclick = function (event) {
     const viewQRModal = document.getElementById('viewQRModal');
     const scanQRModal = document.getElementById('scanQRModal');
     const generateReportModal = document.getElementById('generateReportModal');
+    const addStudentModal = document.getElementById('addStudentModal');
+    const editStudentModal = document.getElementById('editStudentModal');
 
-    if (event.target == modal) {
-        modal.style.display = "none";
-    } else if (event.target == addAuthorModal) {
-        addAuthorModal.style.display = "none";
-    } else if (event.target == editAuthorModal) {
-        editAuthorModal.style.display = "none";
+    if (modal && event.target == modal) {
+        closePublisherModal();
+    } else if (addAuthorModal && event.target == addAuthorModal) {
+        closeAddAuthorModal();
+    } else if (editAuthorModal && event.target == editAuthorModal) {
+        closeEditAuthorModal();
     } else if (authorBioModal && event.target == authorBioModal) {
-        authorBioModal.style.display = "none";
+        closeAuthorModal();
     } else if (authorBooksModal && event.target == authorBooksModal) {
-        authorBooksModal.style.display = "none";
+        closeAuthorBooksModal();
     } else if (addBookModal && event.target == addBookModal) {
-        addBookModal.style.display = "none";
+        closeAddBookModal();
     } else if (editBookModal && event.target == editBookModal) {
-        editBookModal.style.display = "none";
+        closeEditBookModal();
     } else if (addPublisherModal && event.target == addPublisherModal) {
-        addPublisherModal.style.display = "none";
+        closeAddPublisherModal();
     } else if (editPublisherModal && event.target == editPublisherModal) {
-        editPublisherModal.style.display = "none";
+        closeEditPublisherModal();
     } else if (addUserModal && event.target == addUserModal) {
-        addUserModal.style.display = "none";
+        closeAddUserModal();
     } else if (editUserModal && event.target == editUserModal) {
-        editUserModal.style.display = "none";
+        closeEditUserModal();
     } else if (addPenaltyModal && event.target == addPenaltyModal) {
-        addPenaltyModal.style.display = "none";
+        closeAddPenaltyModal();
     } else if (addMemberModal && event.target == addMemberModal) {
-        addMemberModal.style.display = "none";
+        closeAddMemberModal();
     } else if (editMemberModal && event.target == editMemberModal) {
-        editMemberModal.style.display = "none";
+        closeEditMemberModal();
     } else if (issueBookModal && event.target == issueBookModal) {
-        issueBookModal.style.display = "none";
+        closeIssueBookModal();
     } else if (emailStudentModal && event.target == emailStudentModal) {
-        emailStudentModal.style.display = "none";
+        if (typeof closeEmailStudentModal === 'function') closeEmailStudentModal();
     } else if (scanQRModal && event.target == scanQRModal) {
-        closeScanQRModal(); // Use function to clear scanner
+        closeScanQRModal();
     } else if (generateReportModal && event.target == generateReportModal) {
         closeGenerateReportModal();
+    } else if (addStudentModal && event.target == addStudentModal) {
+        if (typeof closeAddStudentModal === 'function') closeAddStudentModal();
+    } else if (editStudentModal && event.target == editStudentModal) {
+        if (typeof closeEditStudentModal === 'function') closeEditStudentModal();
     }
 }
 
 function toggleDateInputs(checkbox) {
-    const startDate = document.querySelector('input[name="start_date"]');
-    const endDate = document.querySelector('input[name="end_date"]');
-    
-    if (startDate && endDate) {
-        if (checkbox.checked) {
-            startDate.disabled = true;
-            endDate.disabled = true;
-        } else {
-            startDate.disabled = false;
-            endDate.disabled = false;
-        }
-    }
+    const dateInputs = checkbox.closest('form').querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        input.disabled = checkbox.checked;
+        if (checkbox.checked) input.value = '';
+    });
 }

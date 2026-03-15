@@ -22,33 +22,6 @@ try:
 except ImportError:
     HAS_REPORTLAB = False
 
-def get_library_settings():
-    settings_obj = LibrarySettings.objects.first()
-    if not settings_obj:
-        # Create default settings if none exist
-        settings_obj = LibrarySettings.objects.create()
-    return settings_obj
-
-def get_notifications():
-    return Notification.objects.all().order_by('-created_at')[:50]
-
-def add_notification(message):
-    Notification.objects.create(message=message)
-    
-    # Keep only last 50 notifications
-    count = Notification.objects.count()
-    if count > 50:
-        # Get IDs of the newest 50
-        last_50_ids = Notification.objects.order_by('-created_at').values_list('id', flat=True)[:50]
-        # Delete the rest
-        Notification.objects.exclude(id__in=list(last_50_ids)).delete()
-        
-def log_audit(request, action_message):
-    username = request.user.username if request and hasattr(request, 'user') and request.user.is_authenticated else 'System'
-    AuditLog.objects.create(username=username, action=action_message)
-
-# Create your views here.
-
 def admin_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -79,7 +52,6 @@ def generate_circulation_report(request):
     if not HAS_REPORTLAB:
         return HttpResponse("The 'reportlab' library is missing. Please install it using: pip install reportlab")
 
-    # Filter logic (mirrors admin_dashboard)
     circ_search = request.GET.get('circ_search', '')
     circ_status = request.GET.get('circ_status', '')
     circ_sort = request.GET.get('circ_sort') or '-issue_date'
@@ -388,7 +360,6 @@ def admin_dashboard(request):
             monthly_revenue = Penalty.objects.filter(created_at__year=y, created_at__month=m).aggregate(Sum('amount'))['amount__sum'] or 0
             revenue_data.append(float(monthly_revenue))
 
-    # Author Filtering and Sorting
     author_search = request.GET.get('author_search', '')
     author_sort = request.GET.get('author_sort', '-book_count')
     
@@ -406,7 +377,6 @@ def admin_dashboard(request):
     else:
         authors_qs = authors_qs.order_by('-book_count')
 
-    # Publisher Filtering and Sorting
     publisher_search = request.GET.get('publisher_search', '')
     publisher_sort = request.GET.get('publisher_sort', 'name_asc')
     
@@ -426,7 +396,6 @@ def admin_dashboard(request):
     else:
         publishers_qs = publishers_qs.order_by('name')
 
-    # Student Filtering and Sorting
     student_search = request.GET.get('student_search', '')
     student_sort = request.GET.get('student_sort', '-joined_date')
     
@@ -446,7 +415,15 @@ def admin_dashboard(request):
 
     audit_logs = AuditLog.objects.all().order_by('-timestamp')
     try:
-        email_logs = EmailLog.objects.all().order_by('-sent_at')[:100]
+        email_logs = EmailLog.objects.all().order_by('-sent_at')
+        email_search = request.GET.get('email_search', '')
+        if email_search:
+            email_logs = email_logs.filter(
+                Q(recipient__icontains=email_search) | 
+                Q(subject__icontains=email_search) |
+                Q(message__icontains=email_search)
+            )
+        email_logs = email_logs[:100]
     except Exception:
         email_logs = []
 
@@ -499,7 +476,6 @@ def add_book(request):
         image_url = request.POST.get('image_url')
         location = request.POST.get('location')
         
-        # Handle Author (Select existing or Create new)
         author = None
         new_author_name = request.POST.get('new_author')
         if new_author_name:
@@ -511,7 +487,6 @@ def add_book(request):
             add_notification("Failed to add book: Please select or enter an author.")
             return redirect(reverse('admin_dashboard') + '?tab=books')
 
-        # Handle Publisher (Select existing or Create new)
         publisher = None
         new_publisher_name = request.POST.get('new_publisher')
         if new_publisher_name:
@@ -589,7 +564,7 @@ def add_user(request):
                 try:
                     user = User.objects.create_user(username=username, email=email, password=password)
                     user.is_superuser = is_superuser
-                    user.is_staff = is_superuser # Admins are usually staff
+                    user.is_staff = is_superuser
                     user.save()
                     add_notification(f"User '{username}' added successfully.")
                     log_audit(request, f"added a new user '{username}' (Admin: {is_superuser}).")
@@ -713,7 +688,6 @@ def return_book(request):
             circulation.return_date = date.today()
             circulation.status = 'returned'
             
-            # Calculate fine if overdue
             if circulation.return_date > circulation.due_date:
                 overdue_days = (circulation.return_date - circulation.due_date).days
                 
@@ -721,7 +695,6 @@ def return_book(request):
                 fine_amount = overdue_days * float(lib_settings.penalty_per_day)
                 circulation.fine_amount = fine_amount
                 
-                # Create a penalty record
                 Penalty.objects.create(student=circulation.student, book=circulation.book, due_date=circulation.due_date, days_overdue=overdue_days, amount=fine_amount, reason=f"Overdue: {circulation.book.title}", status='unpaid')
                 add_notification(f"Book '{book.title}' returned overdue by {circulation.student.name}. Penalty: {fine_amount}")
             else:
@@ -780,7 +753,7 @@ def delete_user(request):
     if request.method == "POST":
         user_id = request.POST.get('user_id')
         user = get_object_or_404(User, id=user_id)
-        if user != request.user:  # Prevent deleting yourself
+        if user != request.user: 
             username = user.username
             user.delete()
             log_audit(request, f"deleted user '{username}'.")
@@ -861,3 +834,24 @@ def update_settings(request):
         add_notification("Settings updated successfully.")
         log_audit(request, "updated the library system settings.")
     return redirect(reverse('admin_dashboard') + '?tab=settings')
+
+def get_library_settings():
+    settings_obj = LibrarySettings.objects.first()
+    if not settings_obj:
+        settings_obj = LibrarySettings.objects.create()
+    return settings_obj
+
+def get_notifications():
+    return Notification.objects.all().order_by('-created_at')[:50]
+
+def add_notification(message):
+    Notification.objects.create(message=message)
+    
+    count = Notification.objects.count()
+    if count > 50:
+        last_50_ids = Notification.objects.order_by('-created_at').values_list('id', flat=True)[:50]
+        Notification.objects.exclude(id__in=list(last_50_ids)).delete()
+        
+def log_audit(request, action_message):
+    username = request.user.username if request and hasattr(request, 'user') and request.user.is_authenticated else 'System'
+    AuditLog.objects.create(username=username, action=action_message)

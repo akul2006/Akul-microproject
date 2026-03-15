@@ -4,7 +4,6 @@ import time
 import os
 import datetime
 
-
 class AkulConfig(AppConfig):
     name = 'akul'
 
@@ -25,7 +24,6 @@ class AkulConfig(AppConfig):
                 tomorrow = today + datetime.timedelta(days=1)
                 lib_settings = LibrarySettings.objects.first() or LibrarySettings.objects.create()
 
-                # 1. Notify for books due tomorrow
                 approaching_due = Circulation.objects.filter(status='issued', due_date=tomorrow)
                 for circ in approaching_due:
                     subject = "Library Reminder: Book Due Tomorrow"
@@ -43,7 +41,6 @@ class AkulConfig(AppConfig):
                     if not Notification.objects.filter(message=notif_msg, created_at__date=today).exists():
                         Notification.objects.create(message=notif_msg)
 
-                # 2. Process overdue books
                 overdue_circulations = Circulation.objects.filter(status='issued', due_date__lt=today)
                 for circ in overdue_circulations:
                     days_overdue = (today - circ.due_date).days
@@ -71,7 +68,6 @@ class AkulConfig(AppConfig):
                         if not Notification.objects.filter(message=notif_msg, created_at__date=today).exists():
                             Notification.objects.create(message=notif_msg)
                             
-                # Clean up old notifications (keep last 50)
                 count = Notification.objects.count()
                 if count > 50:
                     last_ids = Notification.objects.order_by('-created_at').values_list('id', flat=True)[:50]
@@ -79,5 +75,4 @@ class AkulConfig(AppConfig):
             except Exception as e:
                 print(f"[BACKGROUND TASK] Error: {e}")
 
-            # Pause the thread for 24 hours (86400 seconds) before running again
             time.sleep(86400)

@@ -228,13 +228,17 @@ def admin_dashboard(request):
             notification_id = request.POST.get('notification_id')
             if notification_id:
                 Notification.objects.filter(id=notification_id).update(read=True)
-        return redirect('admin_dashboard')
+        return redirect(request.META.get('HTTP_REFERER', 'admin_dashboard'))
 
     search_query = request.GET.get('search_query', '')
     books = Book.objects.all().order_by('-id')
     
     if search_query:
-        books = books.filter(title__icontains=search_query)
+        books = books.filter(
+            Q(title__icontains=search_query) |
+            Q(author__name__icontains=search_query) |
+            Q(isbn__icontains=search_query)
+        )
 
     circ_search = request.GET.get('circ_search', '')
     circ_status = request.GET.get('circ_status', '')

@@ -554,7 +554,7 @@
                 </div>
             </div>
             <form method="GET" action="{% url 'admin_dashboard' %}" style="margin-bottom: 20px; display: flex; gap: 10px;">
-                <input type="text" name="search_query" value="{{ search_query|default:'' }}" placeholder="Search books by title..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
+                <input type="text" name="search_query" value="{{ search_query|default:'' }}" placeholder="Search books by title, author, or ISBN..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
                 <button type="submit" class="btn-primary" style="padding: 12px 25px;">Search</button>
                 {% if search_query %}
                 <a href="{% url 'admin_dashboard' %}?tab=books" class="btn-primary" style="padding: 12px 25px; background-color: #6c757d; text-decoration: none; display: flex; align-items: center; justify-content: center;">Clear</a>
@@ -1724,6 +1724,29 @@
 
         function closePublisherModal() {
             document.getElementById('publisherBooksModal').style.display = 'none';
+        }
+
+        function openGenerateReportModal() {
+            document.getElementById('generateReportModal').style.display = 'block';
+        }
+
+        function closeGenerateReportModal() {
+            document.getElementById('generateReportModal').style.display = 'none';
+            document.querySelector('#generateReportModal input[name="start_date"]').value = '';
+            document.querySelector('#generateReportModal input[name="end_date"]').value = '';
+            const allTimeCheckbox = document.getElementById('allTimeCheckbox');
+            if (allTimeCheckbox) {
+                allTimeCheckbox.checked = false;
+                toggleDateInputs(allTimeCheckbox);
+            }
+        }
+
+        function toggleDateInputs(checkbox) {
+            const dateInputs = checkbox.closest('form').querySelectorAll('input[type="date"]');
+            dateInputs.forEach(input => {
+                input.disabled = checkbox.checked;
+                if (checkbox.checked) input.value = '';
+            });
         }
     </script>
 

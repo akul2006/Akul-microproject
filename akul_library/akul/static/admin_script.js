@@ -44,6 +44,14 @@ document.addEventListener('DOMContentLoaded', checkHash);
 // Check immediately in case the script runs after DOMContentLoaded
 checkHash();
 
+window.addEventListener('popstate', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab') || 'dashboard';
+    if (document.getElementById(tab)) {
+        showPage(tab);
+    }
+});
+
 // Page Navigation
 function showPage(pageName) {
     // Hide all pages
@@ -64,6 +72,14 @@ function showPage(pageName) {
             link.classList.add('active');
         }
     });
+
+    // Update URL to keep track of current tab
+    const url = new URL(window.location);
+    if (url.searchParams.get('tab') !== pageName) {
+        url.searchParams.set('tab', pageName);
+        url.searchParams.delete('open_issue');
+        window.history.pushState({}, '', url);
+    }
 }
 
 // Notification Logic
@@ -267,6 +283,13 @@ function openGenerateReportModal() {
 
 function closeGenerateReportModal() {
     document.getElementById('generateReportModal').style.display = "none";
+    document.querySelector('#generateReportModal input[name="start_date"]').value = '';
+    document.querySelector('#generateReportModal input[name="end_date"]').value = '';
+    const allTimeCheckbox = document.getElementById('allTimeCheckbox');
+    if (allTimeCheckbox) {
+        allTimeCheckbox.checked = false;
+        toggleDateInputs(allTimeCheckbox);
+    }
 }
 
 
@@ -289,23 +312,14 @@ function openScanBarcodeModal() {
 
 function startScanner() {
     const config = { 
-        fps: 10, 
-        qrbox: 250,
-        formatsToSupport: [ 
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.QR_CODE 
-        ]
+        fps: 10,
+        useBarCodeDetectorIfSupported: true // Uses OS native barcode scanning if available
     };
     html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config);
-    html5QrcodeScanner.render(onScanSuccess);
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 }
 
 function onScanSuccess(decodedText, decodedResult) {
-    // Handle on success condition with the decoded text
     html5QrcodeScanner.clear().then(() => {
         const url = new URL(window.location.href);
         url.searchParams.set('tab', 'circulations');
@@ -315,6 +329,10 @@ function onScanSuccess(decodedText, decodedResult) {
     }).catch(err => {
         console.error(err);
     });
+}
+
+function onScanFailure(error) {
+    // Suppress console errors when a frame/image doesn't immediately yield a barcode
 }
 
 function closeScanQRModal() {
@@ -382,7 +400,7 @@ window.onclick = function (event) {
     } else if (scanQRModal && event.target == scanQRModal) {
         closeScanQRModal(); // Use function to clear scanner
     } else if (generateReportModal && event.target == generateReportModal) {
-        generateReportModal.style.display = "none";
+        closeGenerateReportModal();
     }
 }
 

@@ -35,12 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const allTimeCheckbox = document.getElementById('allTimeCheckbox');
     if (allTimeCheckbox) toggleDateInputs(allTimeCheckbox);
 
-    // Initialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
 
-    // Switch to books tab if a search query is present
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('search_query')) {
         showPage('books');
@@ -235,7 +233,6 @@ async function fetchBookDetails() {
                 return;
             }
 
-            // Fallback: Open Library API
             feedback.innerText = 'Not found in Google. Trying Open Library...';
             const olResponse = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
             const olData = await olResponse.json();
@@ -333,7 +330,6 @@ function closeEditPublisherModal() {
     }
 }
 
-// User Modal Functions
 function openAddUserModal() {
     document.getElementById('addUserModal').style.display = "block";
 }

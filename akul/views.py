@@ -414,6 +414,14 @@ def admin_dashboard(request):
         students_qs = students_qs.order_by('-joined_date')
 
     audit_logs = AuditLog.objects.all().order_by('-timestamp')
+    audit_start = request.GET.get('audit_start')
+    audit_end = request.GET.get('audit_end')
+    
+    if audit_start:
+        audit_logs = audit_logs.filter(timestamp__gte=audit_start)
+    if audit_end:
+        audit_logs = audit_logs.filter(timestamp__lte=audit_end)
+
     try:
         email_logs = EmailLog.objects.all().order_by('-sent_at')
         email_search = request.GET.get('email_search', '')

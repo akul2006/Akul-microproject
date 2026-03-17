@@ -34,6 +34,17 @@ function checkHash() {
 document.addEventListener('DOMContentLoaded', function() {
     const allTimeCheckbox = document.getElementById('allTimeCheckbox');
     if (allTimeCheckbox) toggleDateInputs(allTimeCheckbox);
+
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    // Switch to books tab if a search query is present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('search_query')) {
+        showPage('books');
+    }
 });
 
 document.addEventListener('DOMContentLoaded', checkHash);

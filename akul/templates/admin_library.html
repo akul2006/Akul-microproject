@@ -9,182 +9,13 @@
     <link rel="icon" type="image/x-icon" href="{% static 'img/logo.ico' %}">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        :root {
-            --bg-color: #f4f6f9;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --text-secondary: #6c757d;
-            --border-color: #dee2e6;
-            --sidebar-bg: #ffffff;
-            --sidebar-text: #333333;
-            --header-bg: #ffffff;
-        }
-
-        body {
-            background-color: var(--bg-color) !important;
-            color: var(--text-color) !important;
-        }
-
-        .main-content {
-            background-color: var(--bg-color) !important;
-            color: var(--text-color) !important;
-        }
-
-        .top-header {
-            background-color: var(--header-bg) !important;
-            color: var(--text-color) !important;
-            border-bottom: 1px solid var(--border-color) !important;
-        }
-        
-        .top-header .header-text h1 {
-            color: var(--text-color) !important;
-        }
-        
-        .top-header .header-text p {
-            color: var(--text-secondary) !important;
-        }
-
-        .activity-container, .issued-books-section, .top-authors-section, .book-card, .setting-card, .users-table-container, .penalties-table-container, .settings-content {
-            background-color: var(--card-bg) !important;
-            color: var(--text-color) !important;
-            border: 1px solid var(--border-color) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
-        }
-
-        .card {
-            background-color: var(--card-bg) !important;
-            color: var(--text-color) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
-        }
-
-        .data-table {
-            background-color: var(--card-bg) !important;
-            color: var(--text-color) !important;
-        }
-
-        .data-table th {
-            background-color: #f8f9fa !important;
-            color: #495057 !important;
-            border-bottom: 2px solid var(--border-color) !important;
-        }
-
-        .data-table td {
-            border-bottom: 1px solid var(--border-color) !important;
-            color: var(--text-color) !important;
-        }
-
-        .setting-input, .filter-dropdown, input[type="text"], input[type="search"], select, input[type="email"], input[type="password"], input[type="number"], input[type="date"], textarea {
-            background-color: #ffffff !important;
-            color: #495057 !important;
-            border: 1px solid #ced4da !important;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            color: var(--text-color) !important;
-        }
-
-        /* Sidebar Overrides */
-        .sidebar {
-            background-color: var(--sidebar-bg) !important;
-            border-right: 1px solid var(--border-color) !important;
-        }
-
-        .nav-link {
-            color: var(--text-secondary) !important;
-        }
-
-        .nav-link:hover {
-            background-color: #f8f9fa !important;
-            color: #007bff !important;
-        }
-
-        .nav-link.active {
-            background-color: #e3f2fd !important;
-            color: #007bff !important;
-            border-left-color: #007bff !important;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1000; 
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background-color: rgba(255, 255, 255, 0.5); 
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto; 
-            padding: 25px;
-            border: 1px solid #888;
-            width: 50%; 
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            color: var(--text-color);
-        }
-
-        .notification-dropdown {
-            background-color: var(--card-bg) !important;
-            color: var(--text-color) !important;
-            border: 1px solid var(--border-color) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
-        }
-
-        .notification-header {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            padding: 10px 15px !important;
-        }
-
-        .notification-header h3 {
-            margin: 0 !important;
-        }
-
-        .notification-actions {
-            display: flex !important;
-            gap: 10px !important;
-        }
-
-        .profile-dropdown {
-            display: none;
-            position: absolute;
-            top: 70px;
-            right: 20px;
-            background-color: var(--card-bg) !important;
-            border: 1px solid var(--border-color) !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
-            border-radius: 8px;
-            z-index: 1000;
-            min-width: 150px;
-        }
-
-        .profile-dropdown.active {
-            display: block;
-        }
-
-        .profile-dropdown a {
-            display: flex; align-items: center; padding: 12px 16px; color: #dc3545; text-decoration: none; font-weight: 500; transition: background-color 0.2s;
-        }
-
-        .profile-dropdown a:hover {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-        }
-
-    </style>
 </head>
 
 <body>
     <!-- Sidebar Navigation -->
     <div class="sidebar">
         <div class="logo">
-            <img src="{% static 'img/logo2.png' %}" alt="BookSphere Logo" style="width: 200px; height: auto; display: block; margin: 0; margin-top: 0; margin-bottom: 0; padding: 0px;">
+            <img src="{% static 'img/logo2.png' %}" alt="BookSphere Logo" class="logo-main">
         </div>
         
         <nav class="nav-menu">
@@ -254,7 +85,7 @@
         <header class="top-header">
             <div class="header-left">
                 <div class="header-icon">
-                    <img src="{% static 'img/logo.ico' %}" alt="Logo" style="width:58px; height: auto;">
+                    <img src="{% static 'img/logo.ico' %}" alt="Logo" class="logo-icon">
                 </div>
                 <div class="header-text">
                     <h1>{{ lib_settings.library_name|default:"BookSphere" }}</h1>
@@ -263,16 +94,16 @@
             </div>
             <div class="header-right">
                 <div id="bellIcon" class="notification-icon" onclick="toggleNotifications(event)">
-                    🔔
+                    <i data-lucide="bell"></i>
                     {% if unread_count > 0 %}
                     <span class="notification-badge">{{ unread_count }}</span>
                     {% endif %}
                 </div>
-                <div class="user-profile" onclick="toggleProfileDropdown(event)" style="cursor: pointer;" title="Profile options">
+                <div class="user-profile cursor-pointer" onclick="toggleProfileDropdown(event)" title="Profile options">
                     <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=4A90E2&color=fff" alt="Admin">
                     <div class="user-info">
-                        <span class="user-name" style="color: #000;">{{ user.username }}</span>
-                        <span class="user-role" style="color: #000;">Admin</span>
+                        <span class="user-name text-black">{{ user.username }}</span>
+                        <span class="user-role text-black">Admin</span>
                     </div>
                 </div>
             </div>
@@ -288,46 +119,43 @@
             <div class="notification-header">
                 <h3>Notifications</h3>
                 <div class="notification-actions">
-                    <form method="POST" action="{% url 'admin_dashboard' %}" style="margin: 0;">
+                    <form method="POST" action="{% url 'admin_dashboard' %}" class="m-0">
                         {% csrf_token %}
                         <input type="hidden" name="notification_action" value="mark_read">
-                        <button type="submit" style="background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.8em; padding: 0;">Mark all read</button>
+                        <button type="submit" class="notif-btn-primary">Mark all read</button>
                     </form>
-                    <form method="POST" action="{% url 'admin_dashboard' %}" style="margin: 0;">
+                    <form method="POST" action="{% url 'admin_dashboard' %}" class="m-0">
                         {% csrf_token %}
                         <input type="hidden" name="notification_action" value="clear">
-                        <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 0.8em; padding: 0;">Clear</button>
+                        <button type="submit" class="notif-btn-danger">Clear</button>
                     </form>
                 </div>
             </div>
             {% for notification in notifications %}
-            <div class="notification-item" style="{% if not notification.read %}background-color: #f0f7ff; border-left: 3px solid #007bff;{% endif %}">
+            <div class="notification-item {% if not notification.read %}unread{% endif %}">
                 <div class="notif-content">
                     <p>{{ notification.message }}</p>
                     <span class="notif-time">{{ notification.created_at|timesince }} ago</span>
                 </div>
                 {% if not notification.read %}
-                <form method="POST" action="{% url 'admin_dashboard' %}" style="margin-left: 10px; display: flex; align-items: center;">
+                <form method="POST" action="{% url 'admin_dashboard' %}" class="notif-mark-form">
                     {% csrf_token %}
                     <input type="hidden" name="notification_action" value="mark_single_read">
                     <input type="hidden" name="notification_id" value="{{ notification.id }}">
-                    <button type="submit" title="Mark as read" style="background: none; border: none; cursor: pointer; color: #007bff; font-size: 16px; padding: 5px; border-radius: 50%; transition: background 0.2s;">✓</button>
+                    <button type="submit" title="Mark as read" class="notif-mark-btn">✓</button>
                 </form>
                 {% endif %}
             </div>
             {% empty %}
-            <p style="padding: 15px; text-align: center; color: #6c757d;">No new notifications</p>
+            <p class="empty-msg">No new notifications</p>
             {% endfor %}
         </div>
 
         <!-- Display Messages (Success/Error) -->
         {% if messages %}
-        <div style="padding: 20px 20px 0;">
+        <div class="msg-container">
             {% for message in messages %}
-            <div style="padding: 15px; margin-bottom: 10px; border-radius: 5px; font-weight: 500;
-                        {% if message.tags == 'success' %}background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;
-                        {% elif message.tags == 'error' %}background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
-                        {% else %}background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db;{% endif %}">
+            <div class="msg-item {% if message.tags == 'success' %}msg-success{% elif message.tags == 'error' %}msg-error{% else %}msg-default{% endif %}">
                 {{ message }}
             </div>
             {% endfor %}
@@ -417,22 +245,22 @@
                                 {% for circ in circulations|slice:":5" %}
                                 <tr>
                                     <td>
-                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="flex-center-gap">
                                             <div>
                                                 <strong>{{ circ.book.title }}</strong>
-                                                <br><span style="font-size: 0.8em; color: #666;">{{ circ.book.author.name }}</span>
+                                                <br><span class="text-muted font-sm">{{ circ.book.author.name }}</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="flex-center-gap">
                                             <span>{{ circ.student.name }}</span>
                                         </div>
                                     </td>
                                     <td>
-                                        <div style="font-size: 0.9em;">
+                                        <div class="font-md">
                                             <div>Issue: {{ circ.issue_date|date:"M d" }}</div>
-                                            <div style="color: #666;">Due: {{ circ.due_date|date:"M d" }}</div>
+                                            <div class="text-muted">Due: {{ circ.due_date|date:"M d" }}</div>
                                         </div>
                                     </td>
                                     <td>
@@ -446,7 +274,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="5" style="text-align: center; padding: 20px; color: #666;">No recent activity.</td>
+                                    <td colspan="5" class="empty-table-cell">No recent activity.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -454,7 +282,7 @@
                     </div>
 
                     <!-- Recently Added Books Table -->
-                    <div class="activity-container" style="margin-top: 30px;">
+                    <div class="activity-container mt-30">
                         <div class="activity-header">
                             <h2>Recently Added Books</h2>
                         </div>
@@ -470,30 +298,30 @@
                                 {% for book in books|slice:":4" %}
                                 <tr>
                                     <td>
-                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="flex-center-gap">
                                             {% if book.thumbnail_link %}
-                                            <img src="{{ book.thumbnail_link }}" alt="{{ book.title }}" style="width: 32px; height: 45px; object-fit: cover; border-radius: 4px;">
+                                            <img src="{{ book.thumbnail_link }}" alt="{{ book.title }}" class="book-cover-sm">
                                             {% else %}
-                                            <div style="width: 32px; height: 45px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 16px;">📖</div>
+                                            <div class="book-cover-placeholder-sm">📖</div>
                                             {% endif %}
                                             <div>
                                                 <strong>{{ book.title }}</strong>
-                                                <br><span style="font-size: 0.8em; color: #666;">by {{ book.author.name|default:book.author }}</span>
+                                                <br><span class="text-muted font-sm">by {{ book.author.name|default:book.author }}</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td><span style="font-size: 0.9em; color: #555;">{{ book.location|default:"Not set" }}</span></td>
+                                    <td><span class="text-muted font-md">{{ book.location|default:"Not set" }}</span></td>
                                     <td>
                                         {% if book.available_quantity > 0 %}
                                         <span class="status-badge returned">Available</span>
                                         {% else %}
-                                        <span class="status-badge" style="background-color: #f8d7da; color: #721c24;">Unavailable</span>
+                                        <span class="status-badge unavailable">Unavailable</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="3" style="text-align: center; padding: 20px; color: #666;">No books available.</td>
+                                    <td colspan="3" class="empty-table-cell">No books available.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -504,32 +332,32 @@
                 <!-- Right Sidebar -->
                 <div class="dashboard-right">
                     <!-- Overdue Books -->
-                    <div class="issued-books-section" style="border-color: #ffcdd2;">
-                        <div class="section-header" style="background-color: #ffffff; border-bottom: 1px solid #ffffff;">
+                    <div class="issued-books-section overdue-section">
+                        <div class="section-header overdue-header">
                             <h2>Overdue Books</h2>
                         </div>
                         <div class="issued-books-list">
                             {% for circ in overdue_circulations|slice:":5" %}
-                            <div class="issued-book-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                            <div class="issued-book-item overdue-item">
                                 <div>
-                                    <h4 style="margin: 0; font-size: 14px; color: #c62828;">{{ circ.book.title }}</h4>
-                                    <p style="margin: 0; font-size: 12px; color: #666;">Student: {{ circ.student.name }}</p>
+                                    <h4 class="overdue-title">{{ circ.book.title }}</h4>
+                                    <p class="overdue-student">Student: {{ circ.student.name }}</p>
                                 </div>
-                                <span style="font-size: 12px; color: #c62828; font-weight: bold;">Due: {{ circ.due_date|date:"M d" }}</span>
+                                <span class="overdue-due">Due: {{ circ.due_date|date:"M d" }}</span>
                             </div>
                             {% empty %}
-                            <p style="padding: 15px; text-align: center; color: #2e7d32; margin: 0;">No overdue books.</p>
+                            <p class="overdue-empty">No overdue books.</p>
                             {% endfor %}
                             {% if overdue_books_count > 5 %}
-                            <div style="text-align: center; padding: 10px; background-color: #fafafa; border-top: 1px solid #eee;">
-                                <a href="{% url 'admin_dashboard' %}?tab=circulations&circ_status=overdue" style="font-size: 12px; color: #c62828; text-decoration: none; font-weight: 500;">View all {{ overdue_books_count }} overdues →</a>
+                            <div class="overdue-view-all-container">
+                                <a href="{% url 'admin_dashboard' %}?tab=circulations&circ_status=overdue" class="overdue-view-all-link">View all {{ overdue_books_count }} overdues →</a>
                             </div>
                             {% endif %}
                         </div>
                     </div>
 
                     <!-- Top Authors -->
-                    <div class="top-authors-section" style="margin-top: 20px;">
+                    <div class="top-authors-section mt-20">
                         <div class="section-header">
                             <h2>Top Author</h2>
                             <select class="filter-dropdown">
@@ -550,7 +378,7 @@
                                 </div>
                             </div>
                             {% empty %}
-                            <p style="padding: 15px; text-align: center; color: #6c757d;">No authors found.</p>
+                            <p class="empty-msg">No authors found.</p>
                             {% endfor %}
                         </div>
                     </div>
@@ -562,15 +390,15 @@
         <div id="books" class="page">
             <div class="page-header">
                 <h1>Books Management</h1>
-                <div style="display: flex; gap: 10px;">
+                <div class="flex-gap-10">
                     <button class="btn-primary" onclick="openAddBookModal()">+ Add New Book</button>
                 </div>
             </div>
-            <form method="GET" action="{% url 'admin_dashboard' %}" style="margin-bottom: 20px; display: flex; gap: 10px;">
-                <input type="text" name="search_query" value="{{ search_query|default:'' }}" placeholder="Search books by title, author, or ISBN..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
-                <button type="submit" class="btn-primary" style="padding: 12px 25px;">Search</button>
+            <form method="GET" action="{% url 'admin_dashboard' %}" class="search-form">
+                <input type="text" name="search_query" value="{{ search_query|default:'' }}" placeholder="Search books by title, author, or ISBN..." class="search-input">
+                <button type="submit" class="btn-primary btn-large">Search</button>
                 {% if search_query %}
-                <a href="{% url 'admin_dashboard' %}?tab=books" class="btn-primary" style="padding: 12px 25px; background-color: #6c757d; text-decoration: none; display: flex; align-items: center; justify-content: center;">Clear</a>
+                <a href="{% url 'admin_dashboard' %}?tab=books" class="btn-primary btn-clear">Clear</a>
                 {% endif %}
             </form>
             <div class="users-table-container">
@@ -588,21 +416,21 @@
                         <tr>
                             <td>
                                 {% if book.thumbnail_link %}
-                                <img src="{{ book.thumbnail_link }}" alt="{{ book.title }}" style="width: 40px; height: 60px; object-fit: cover; border-radius: 4px;">
+                                <img src="{{ book.thumbnail_link }}" alt="{{ book.title }}" class="book-cover-md">
                                 {% else %}
-                                <div style="width: 40px; height: 60px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 20px;">📖</div>
+                                <div class="book-cover-placeholder-md">📖</div>
                                 {% endif %}
                             </td>
                             <td>
                                 <strong>{{ book.title }}</strong><br>
-                                <span style="font-size: 0.85em; color: #666;">
+                                <span class="text-muted font-sm">
                                     {% if book.location %} {{ book.location }}{% else %}Location not set{% endif %}
                                 </span>
                             </td>
                             <td>{{ book.author.name|default:book.author }}</td>
                             <td>
-                                <button class="action-btn edit-btn" onclick="openEditBookModal('{{ book.id }}', '{{ book.title|escapejs }}', '{{ book.author.id }}', '{{ book.isbn|escapejs }}', '{{ book.total_quantity }}', '{{ book.available_quantity }}', '{{ book.thumbnail_link|escapejs }}', '{{ book.location|escapejs }}')" style="margin-right: 5px;">✎</button>
-                                <form method="POST" action="{% url 'delete_book' book.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this book?');">
+                                <button class="action-btn edit-btn mr-5" onclick="openEditBookModal('{{ book.id }}', '{{ book.title|escapejs }}', '{{ book.author.id }}', '{{ book.isbn|escapejs }}', '{{ book.total_quantity }}', '{{ book.available_quantity }}', '{{ book.thumbnail_link|escapejs }}', '{{ book.location|escapejs }}')">✎</button>
+                                <form method="POST" action="{% url 'delete_book' book.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this book?');">
                                     {% csrf_token %}
                                     <button type="submit" class="action-btn delete-btn">🗑</button>
                                 </form>
@@ -610,7 +438,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" style="text-align: center; padding: 20px; color: #666;">No books available.</td>
+                            <td colspan="4" class="empty-table-cell">No books available.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -625,21 +453,21 @@
                 <button class="btn-primary" onclick="openAddAuthorModal()">+ Add New Author</button>
             </div>
             
-            <div class="filter-bar" style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <form method="GET" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div class="filter-bar">
+                <form method="GET" action="{% url 'admin_dashboard' %}" class="filter-form">
                     <input type="hidden" name="tab" value="authors">
-                    <input type="text" name="author_search" value="{{ request.GET.author_search|default:'' }}" placeholder="Search Author Name..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; min-width: 200px;">
+                    <input type="text" name="author_search" value="{{ request.GET.author_search|default:'' }}" placeholder="Search Author Name..." class="filter-input">
                     
-                    <select name="author_sort" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select name="author_sort" class="filter-select">
                         <option value="-book_count" {% if request.GET.author_sort == '-book_count' %}selected{% endif %}>Most Books</option>
                         <option value="book_count" {% if request.GET.author_sort == 'book_count' %}selected{% endif %}>Least Books</option>
                         <option value="name_asc" {% if request.GET.author_sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
                         <option value="name_desc" {% if request.GET.author_sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
                     </select>
 
-                    <button type="submit" class="btn-primary" style="padding: 10px 20px;">Filter</button>
+                    <button type="submit" class="btn-primary btn-filter">Filter</button>
                     {% if request.GET.author_search or request.GET.author_sort %}
-                    <a href="{% url 'admin_dashboard' %}?tab=authors" class="btn-primary" style="background-color: #6c757d; text-decoration: none; padding: 10px 20px; display: flex; align-items: center;">Clear</a>
+                    <a href="{% url 'admin_dashboard' %}?tab=authors" class="btn-primary btn-filter-clear">Clear</a>
                     {% endif %}
                 </form>
             </div>
@@ -657,23 +485,23 @@
                         {% for author in authors %}
                         <tr>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="openAuthorModal(this)" title="Click to view bio">
-                                    <img src="https://ui-avatars.com/api/?name={{ author.name }}&background=random" alt="{{ author.name }}" style="width: 32px; height: 32px; border-radius: 50%;">
-                                    <span class="author-name-text" style="color: #0056b3; font-weight: 500; text-decoration: underline;">{{ author.name }}</span>
-                                    <div class="author-bio-data" style="display: none;">{{ author.bio|default:"No biography available for this author." }}</div>
+                                <div class="flex-center-gap cursor-pointer" onclick="openAuthorModal(this)" title="Click to view bio">
+                                    <img src="https://ui-avatars.com/api/?name={{ author.name }}&background=random" alt="{{ author.name }}" class="avatar-sm">
+                                    <span class="author-name-text author-link">{{ author.name }}</span>
+                                    <div class="author-bio-data d-none">{{ author.bio|default:"No biography available for this author." }}</div>
                                 </div>
                             </td>
                             <td>{{ author.book_set.count }} Books</td>
                             <td>
-                                <button class="action-btn edit-btn" onclick="openAuthorBooksModal(this)" style="background-color: #17a2b8; margin-right: 5px;" title="View Books">👁</button>
-                                <button class="action-btn edit-btn" onclick="openEditAuthorModal('{{ author.id }}', '{{ author.name|escapejs }}', '{{ author.bio|escapejs }}')" style="margin-right: 5px;">✎</button>
+                                <button class="action-btn edit-btn btn-info mr-5" onclick="openAuthorBooksModal(this)" title="View Books">👁</button>
+                                <button class="action-btn edit-btn mr-5" onclick="openEditAuthorModal('{{ author.id }}', '{{ author.name|escapejs }}', '{{ author.bio|escapejs }}')">✎</button>
                                 <button class="action-btn delete-btn" onclick="deleteAuthor('{{ author.id }}')">🗑</button>
-                                <div class="author-books-data" style="display: none;">
+                                <div class="author-books-data d-none">
                                     {% for book in author.book_set.all %}
                                     <div class="modal-book-item">
                                         <div>
                                             <strong>{{ book.title }}</strong>
-                                            <br><span style="font-size: 0.9em; color: #666;">ISBN: {{ book.isbn }}</span>
+                                            <br><span class="text-muted font-md">ISBN: {{ book.isbn }}</span>
                                         </div>
                                     </div>
                                     {% empty %}
@@ -684,7 +512,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="3" style="text-align: center; padding: 20px; color: #666;">No authors found.</td>
+                            <td colspan="3" class="empty-table-cell">No authors found.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -715,21 +543,21 @@
                         <tr>
                             <td>#{{ user_item.id }}</td>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <img src="https://ui-avatars.com/api/?name={{ user_item.username }}&background=random" alt="{{ user_item.username }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                <div class="flex-center-gap">
+                                    <img src="https://ui-avatars.com/api/?name={{ user_item.username }}&background=random" alt="{{ user_item.username }}" class="avatar-sm">
                                     {{ user_item.username }}
                                 </div>
                             </td>
                             <td>{{ user_item.email }}</td>
                             <td>{% if user_item.is_superuser %}Admin{% else %}Member{% endif %}</td>
                             <td>
-                                <span style="padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; background: {% if user_item.is_active %}#e6f4ea{% else %}#fce8e6{% endif %}; color: {% if user_item.is_active %}#1e7e34{% else %}#c5221f{% endif %};">
+                                <span class="user-status {% if user_item.is_active %}active{% else %}inactive{% endif %}">
                                     {% if user_item.is_active %}Active{% else %}Inactive{% endif %}
                                 </span>
                             </td>
                             <td>
-                                <button class="action-btn edit-btn" onclick="openEditUserModal('{{ user_item.id }}', '{{ user_item.username|escapejs }}', '{{ user_item.email|escapejs }}', '{{ user_item.is_superuser }}', '{{ user_item.is_active }}')" style="margin-right: 5px;">✎</button>
-                                <form method="POST" action="{% url 'delete_user' %}" style="display:inline;">
+                                <button class="action-btn edit-btn mr-5" onclick="openEditUserModal('{{ user_item.id }}', '{{ user_item.username|escapejs }}', '{{ user_item.email|escapejs }}', '{{ user_item.is_superuser }}', '{{ user_item.is_active }}')">✎</button>
+                                <form method="POST" action="{% url 'delete_user' %}" class="d-inline">
                                     {% csrf_token %}
                                     <input type="hidden" name="user_id" value="{{ user_item.id }}">
                                     <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this user?')">🗑</button>
@@ -738,7 +566,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 20px; color: #666;">No users found.</td>
+                            <td colspan="6" class="empty-table-cell">No users found.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -769,8 +597,8 @@
                         {% for penalty in penalties %}
                         <tr>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <img src="https://ui-avatars.com/api/?name={{ penalty.student.name }}&background=random" alt="{{ penalty.student.name }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                <div class="flex-center-gap">
+                                    <img src="https://ui-avatars.com/api/?name={{ penalty.student.name }}&background=random" alt="{{ penalty.student.name }}" class="avatar-sm">
                                     {{ penalty.student.name }}
                                 </div>
                             </td>
@@ -785,12 +613,12 @@
                             </td>
                             <td>
                                 {% if penalty.status != 'Paid' %}
-                                <form method="POST" action="{% url 'mark_penalty_paid' penalty.id %}" style="display:inline;">
+                                <form method="POST" action="{% url 'mark_penalty_paid' penalty.id %}" class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="action-btn edit-btn" style="background-color: #28a745; margin-right: 5px;" title="Mark as Paid">✓</button>
+                                    <button type="submit" class="action-btn edit-btn btn-success mr-5" title="Mark as Paid">✓</button>
                                 </form>
                                 {% endif %}
-                                <form method="POST" action="{% url 'delete_penalty' %}" style="display:inline;">
+                                <form method="POST" action="{% url 'delete_penalty' %}" class="d-inline">
                                     {% csrf_token %}
                                     <input type="hidden" name="penalty_id" value="{{ penalty.id }}">
                                     <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this penalty?')">🗑</button>
@@ -799,7 +627,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 20px; color: #666;">No penalties found.</td>
+                            <td colspan="7" class="empty-table-cell">No penalties found.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -813,31 +641,31 @@
                 <h1>Audit Logs</h1>
             </div>
             
-            <div class="filter-bar" style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <form method="GET" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div class="filter-bar">
+                <form method="GET" action="{% url 'admin_dashboard' %}" class="filter-form">
                     <input type="hidden" name="tab" value="audit_logs">
                     
-                    <div style="display: flex; align-items: center; gap: 5px;">
-                        <label for="audit_start" style="font-size: 14px; color: #333;">From:</label>
-                        <input type="datetime-local" id="audit_start" name="audit_start" value="{{ request.GET.audit_start|default:'' }}" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <div class="flex-center-gap flex-gap-5">
+                        <label for="audit_start" class="filter-label">From:</label>
+                        <input type="datetime-local" id="audit_start" name="audit_start" value="{{ request.GET.audit_start|default:'' }}" class="filter-select">
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 5px;">
-                        <label for="audit_end" style="font-size: 14px; color: #333;">To:</label>
-                        <input type="datetime-local" id="audit_end" name="audit_end" value="{{ request.GET.audit_end|default:'' }}" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <div class="flex-center-gap flex-gap-5">
+                        <label for="audit_end" class="filter-label">To:</label>
+                        <input type="datetime-local" id="audit_end" name="audit_end" value="{{ request.GET.audit_end|default:'' }}" class="filter-select">
                     </div>
 
-                    <button type="button" class="btn-primary" style="background-color: #17a2b8; padding: 10px 15px; font-size: 13px;" onclick="setAuditPreset('today')">Today</button>
-                    <button type="button" class="btn-primary" style="background-color: #6c757d; padding: 10px 15px; font-size: 13px;" onclick="setAuditPreset('all_time')">All Time</button>
+                    <button type="button" class="btn-primary btn-info btn-filter" onclick="setAuditPreset('today')">Today</button>
+                    <button type="button" class="btn-primary btn-secondary btn-filter" onclick="setAuditPreset('all_time')">All Time</button>
 
-                    <button type="submit" class="btn-primary" style="padding: 10px 20px;">Filter</button>
+                    <button type="submit" class="btn-primary btn-filter">Filter</button>
                     {% if request.GET.audit_start or request.GET.audit_end %}
-                    <a href="{% url 'admin_dashboard' %}?tab=audit_logs" class="btn-primary" style="background-color: #6c757d; text-decoration: none; padding: 10px 20px; display: flex; align-items: center;">Clear</a>
+                    <a href="{% url 'admin_dashboard' %}?tab=audit_logs" class="btn-primary btn-filter-clear">Clear</a>
                     {% endif %}
                 </form>
             </div>
 
-            <div class="users-table-container" style="padding: 0;">
+            <div class="users-table-container p-0">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -849,13 +677,13 @@
                     <tbody>
                         {% for log in audit_logs %}
                         <tr>
-                            <td style="font-family: monospace; font-size: 13px; color: #666; padding: 15px 20px;">{{ log.timestamp|date:"M d, Y I:i A" }}</td>
+                            <td class="log-timestamp">{{ log.timestamp|date:"M d, Y I:i A" }}</td>
                             <td><strong>{{ log.username }}</strong></td>
                             <td>{{ log.action }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="3" style="text-align: center; padding: 30px; color: #666;">No audit logs recorded yet. Perform some actions in the system to see them here!</td>
+                            <td colspan="3" class="empty-table-cell-lg">No audit logs recorded yet. Perform some actions in the system to see them here!</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -867,26 +695,26 @@
         <div id="email_logs" class="page">
             <div class="page-header">
                 <h1>Email Logs</h1>
-                <div style="display: flex; gap: 10px;">
+                <div class="flex-gap-10">
                     <button class="btn-primary" onclick="openEmailStudentModal('')">+ Compose Email</button>
-                    <form method="POST" action="{% url 'admin_dashboard' %}" style="margin: 0;" onsubmit="return confirm('Are you sure you want to send warning emails to ALL students with overdue books?');">
+                    <form method="POST" action="{% url 'admin_dashboard' %}" class="m-0" onsubmit="return confirm('Are you sure you want to send warning emails to ALL students with overdue books?');">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="email_all_overdue">
-                        <button type="submit" class="btn-primary" style="background-color: #dc3545;">Send All Overdue Warnings</button>
+                        <button type="submit" class="btn-primary btn-danger">Send All Overdue Warnings</button>
                     </form>
                 </div>
             </div>
             
-            <form method="GET" action="{% url 'admin_dashboard' %}" style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <form method="GET" action="{% url 'admin_dashboard' %}" class="search-form">
                 <input type="hidden" name="tab" value="email_logs">
-                <input type="text" name="email_search" value="{{ request.GET.email_search|default:'' }}" placeholder="Search by recipient, subject, or message..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;">
-                <button type="submit" class="btn-primary" style="padding: 12px 25px;">Search</button>
+                <input type="text" name="email_search" value="{{ request.GET.email_search|default:'' }}" placeholder="Search by recipient, subject, or message..." class="search-input">
+                <button type="submit" class="btn-primary btn-large">Search</button>
                 {% if request.GET.email_search %}
-                <a href="{% url 'admin_dashboard' %}?tab=email_logs" class="btn-primary" style="padding: 12px 25px; background-color: #6c757d; text-decoration: none; display: flex; align-items: center; justify-content: center;">Clear</a>
+                <a href="{% url 'admin_dashboard' %}?tab=email_logs" class="btn-primary btn-clear">Clear</a>
                 {% endif %}
             </form>
 
-            <div class="users-table-container" style="padding: 0;">
+            <div class="users-table-container p-0">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -899,14 +727,14 @@
                     <tbody>
                         {% for log in email_logs %}
                         <tr>
-                            <td style="font-family: monospace; font-size: 13px; color: #666; padding: 15px 20px;">{{ log.sent_at|date:"M d, Y I:i A" }}</td>
+                            <td class="log-timestamp">{{ log.sent_at|date:"M d, Y I:i A" }}</td>
                             <td><strong>{{ log.recipient }}</strong></td>
                             <td>{{ log.subject }}</td>
-                            <td><div style="font-family: inherit; margin: 0; white-space: pre-wrap; font-size: 12px; color: #555; max-height: 80px; overflow-y: auto;">{{ log.message }}</div></td>
+                            <td><div class="log-message">{{ log.message }}</div></td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" style="text-align: center; padding: 30px; color: #666;">No automated emails have been recorded yet.</td>
+                            <td colspan="4" class="empty-table-cell-lg">No automated emails have been recorded yet.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -957,9 +785,9 @@
                                 <label>Max Books per Student</label>
                                 <input type="number" name="max_books" value="{{ lib_settings.max_books }}" class="setting-input">
                             </div>
-                            <div class="setting-item" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
-                                <input type="checkbox" id="enableEmails" name="enable_emails" {% if lib_settings.enable_emails %}checked{% endif %} style="width: auto; margin: 0; cursor: pointer;">
-                                <label for="enableEmails" style="margin: 0; cursor: pointer;">Enable Automated Email Notifications</label>
+                            <div class="setting-item flex-center-gap mt-15">
+                                <input type="checkbox" id="enableEmails" name="enable_emails" {% if lib_settings.enable_emails %}checked{% endif %} class="w-auto m-0 cursor-pointer">
+                                <label for="enableEmails" class="m-0 cursor-pointer">Enable Automated Email Notifications</label>
                             </div>
                         </div>
                     </div>
@@ -972,27 +800,27 @@
         <div id="circulations" class="page">
             <div class="page-header">
                 <h1>Books Circulation</h1>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-primary" onclick="openGenerateReportModal()" style="background-color: #6c757d; display: flex; align-items: center; justify-content: center;">Generate Report</button>
-                    <button class="btn-primary" onclick="openScanBarcodeModal()" style="background-color: #17a2b8;">Scan Barcode</button>
+                <div class="flex-gap-10">
+                    <button class="btn-primary btn-secondary flex-center" onclick="openGenerateReportModal()">Generate Report</button>
+                    <button class="btn-primary btn-info" onclick="openScanBarcodeModal()">Scan Barcode</button>
                     <button class="btn-primary" onclick="openIssueBookModal()">+ Issue Book</button>
                 </div>
             </div>
             
-            <div class="filter-bar" style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <form method="GET" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div class="filter-bar">
+                <form method="GET" action="{% url 'admin_dashboard' %}" class="filter-form">
                     <input type="hidden" name="tab" value="circulations">
                     
-                    <input type="text" name="circ_search" value="{{ request.GET.circ_search|default:'' }}" placeholder="Search Student or Book..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; min-width: 200px;">
+                    <input type="text" name="circ_search" value="{{ request.GET.circ_search|default:'' }}" placeholder="Search Student or Book..." class="filter-input">
                     
-                    <select name="circ_status" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select name="circ_status" class="filter-select">
                         <option value="">All Status</option>
                         <option value="issued" {% if request.GET.circ_status == 'issued' %}selected{% endif %}>Issued</option>
                         <option value="returned" {% if request.GET.circ_status == 'returned' %}selected{% endif %}>Returned</option>
                         <option value="overdue" {% if request.GET.circ_status == 'overdue' %}selected{% endif %}>Overdue</option>
                     </select>
 
-                    <select name="circ_sort" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select name="circ_sort" class="filter-select">
                         <option value="-issue_date" {% if request.GET.circ_sort == '-issue_date' %}selected{% endif %}>Newest Issued</option>
                         <option value="issue_date" {% if request.GET.circ_sort == 'issue_date' %}selected{% endif %}>Oldest Issued</option>
                         <option value="due_date" {% if request.GET.circ_sort == 'due_date' %}selected{% endif %}>Due Date (Earliest)</option>
@@ -1000,9 +828,9 @@
                     </select>
 
 
-                    <button type="submit" class="btn-primary" style="padding: 10px 20px;">Filter</button>
+                    <button type="submit" class="btn-primary btn-filter">Filter</button>
                     {% if request.GET.circ_search or request.GET.circ_status or request.GET.circ_sort %}
-                    <a href="{% url 'admin_dashboard' %}?tab=circulations" class="btn-primary" style="background-color: #6c757d; text-decoration: none; padding: 10px 20px; display: flex; align-items: center;">Clear</a>
+                    <a href="{% url 'admin_dashboard' %}?tab=circulations" class="btn-primary btn-filter-clear">Clear</a>
                     {% endif %}
                 </form>
             </div>
@@ -1025,8 +853,8 @@
                         {% for circ in circulations %}
                         <tr>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <img src="https://ui-avatars.com/api/?name={{ circ.student.name }}&background=random" alt="{{ circ.student.name }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                <div class="flex-center-gap">
+                                    <img src="https://ui-avatars.com/api/?name={{ circ.student.name }}&background=random" alt="{{ circ.student.name }}" class="avatar-sm">
                                     {{ circ.student.name }}
                                 </div>
                             </td>
@@ -1042,17 +870,17 @@
                             <td>{% if circ.fine_amount %}₹{{ circ.fine_amount }}{% else %}-{% endif %}</td>
                             <td>
                                 {% if circ.status == 'issued' %}
-                                <form method="POST" action="{% url 'return_book' %}" style="display:inline;">
+                                <form method="POST" action="{% url 'return_book' %}" class="d-inline">
                                     {% csrf_token %}
                                     <input type="hidden" name="circulation_id" value="{{ circ.id }}">
-                                    <button type="submit" class="action-btn delete-btn" style="background-color: #28a745;">Return</button>
+                                    <button type="submit" class="action-btn delete-btn btn-success">Return</button>
                                 </form>
                                 {% endif %}
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 20px; color: #666;">No circulation records found.</td>
+                            <td colspan="7" class="empty-table-cell">No circulation records found.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -1066,21 +894,21 @@
                 <button class="btn-primary" onclick="openAddStudentModal()">+ Add New Student</button>
             </div>
             
-            <div class="filter-bar" style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <form method="GET" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div class="filter-bar">
+                <form method="GET" action="{% url 'admin_dashboard' %}" class="filter-form">
                     <input type="hidden" name="tab" value="students">
-                    <input type="text" name="student_search" value="{{ request.GET.student_search|default:'' }}" placeholder="Search Name or Email..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; min-width: 200px;">
+                    <input type="text" name="student_search" value="{{ request.GET.student_search|default:'' }}" placeholder="Search Name or Email..." class="filter-input">
                     
-                    <select name="student_sort" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select name="student_sort" class="filter-select">
                         <option value="-joined_date" {% if request.GET.student_sort == '-joined_date' %}selected{% endif %}>Newest Joined</option>
                         <option value="joined_date_asc" {% if request.GET.student_sort == 'joined_date_asc' %}selected{% endif %}>Oldest Joined</option>
                         <option value="name_asc" {% if request.GET.student_sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
                         <option value="name_desc" {% if request.GET.student_sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
                     </select>
 
-                    <button type="submit" class="btn-primary" style="padding: 10px 20px;">Filter</button>
+                    <button type="submit" class="btn-primary btn-filter">Filter</button>
                     {% if request.GET.student_search or request.GET.student_sort %}
-                    <a href="{% url 'admin_dashboard' %}?tab=students" class="btn-primary" style="background-color: #6c757d; text-decoration: none; padding: 10px 20px; display: flex; align-items: center;">Clear</a>
+                    <a href="{% url 'admin_dashboard' %}?tab=students" class="btn-primary btn-filter-clear">Clear</a>
                     {% endif %}
                 </form>
             </div>
@@ -1100,8 +928,8 @@
                         {% for student in students %}
                         <tr>
                             <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <img src="https://ui-avatars.com/api/?name={{ student.name }}&background=random" alt="{{ student.name }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                <div class="flex-center-gap">
+                                    <img src="https://ui-avatars.com/api/?name={{ student.name }}&background=random" alt="{{ student.name }}" class="avatar-sm">
                                     {{ student.name }}
                                 </div>
                             </td>
@@ -1109,9 +937,9 @@
                             <td>{{ student.phone }}</td>
                             <td>{{ student.joined_date|date:"M d, Y" }}</td>
                             <td>
-                                <button class="action-btn edit-btn" onclick="openEmailStudentModal('{{ student.email|escapejs }}')" style="background-color: #17a2b8; margin-right: 5px;" title="Send Email">✉</button>
-                                <button class="action-btn edit-btn" onclick="openEditStudentModal('{{ student.id }}', '{{ student.name|escapejs }}', '{{ student.email|escapejs }}', '{{ student.phone|escapejs }}', '{{ student.address|escapejs }}')" style="margin-right: 5px;">✎</button>
-                                <form method="POST" action="{% url 'delete_student' %}" style="display:inline;">
+                                <button class="action-btn edit-btn btn-info mr-5" onclick="openEmailStudentModal('{{ student.email|escapejs }}')" title="Send Email">✉</button>
+                                <button class="action-btn edit-btn mr-5" onclick="openEditStudentModal('{{ student.id }}', '{{ student.name|escapejs }}', '{{ student.email|escapejs }}', '{{ student.phone|escapejs }}', '{{ student.address|escapejs }}')">✎</button>
+                                <form method="POST" action="{% url 'delete_student' %}" class="d-inline">
                                     {% csrf_token %}
                                     <input type="hidden" name="student_id" value="{{ student.id }}">
                                     <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this student?')">🗑</button>
@@ -1120,7 +948,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px; color: #666;">No students found.</td>
+                            <td colspan="5" class="empty-table-cell">No students found.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -1134,35 +962,35 @@
                 <button class="btn-primary" onclick="openAddPublisherModal()">+ Add New Publisher</button>
             </div>
             
-            <div class="filter-bar" style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <form method="GET" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div class="filter-bar">
+                <form method="GET" action="{% url 'admin_dashboard' %}" class="filter-form">
                     <input type="hidden" name="tab" value="publishers">
-                    <input type="text" name="publisher_search" value="{{ request.GET.publisher_search|default:'' }}" placeholder="Search Publisher..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; min-width: 200px;">
+                    <input type="text" name="publisher_search" value="{{ request.GET.publisher_search|default:'' }}" placeholder="Search Publisher..." class="filter-input">
                     
-                    <select name="publisher_sort" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select name="publisher_sort" class="filter-select">
                         <option value="name_asc" {% if request.GET.publisher_sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
                         <option value="name_desc" {% if request.GET.publisher_sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
                         <option value="book_count_desc" {% if request.GET.publisher_sort == 'book_count_desc' %}selected{% endif %}>Most Books</option>
                         <option value="book_count_asc" {% if request.GET.publisher_sort == 'book_count_asc' %}selected{% endif %}>Least Books</option>
                     </select>
 
-                    <button type="submit" class="btn-primary" style="padding: 10px 20px;">Filter</button>
+                    <button type="submit" class="btn-primary btn-filter">Filter</button>
                     {% if request.GET.publisher_search or request.GET.publisher_sort %}
-                    <a href="{% url 'admin_dashboard' %}?tab=publishers" class="btn-primary" style="background-color: #6c757d; text-decoration: none; padding: 10px 20px; display: flex; align-items: center;">Clear</a>
+                    <a href="{% url 'admin_dashboard' %}?tab=publishers" class="btn-primary btn-filter-clear">Clear</a>
                     {% endif %}
                 </form>
             </div>
 
-            <div class="users-table-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+            <div class="users-table-container publisher-grid">
                 {% for publisher in publishers %}
-                <div class="book-card" onclick="openPublisherModal(this)" data-name="{{ publisher.name }}" title="Click to view books" style="padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; cursor: pointer;">
-                    <h3 style="text-align: center;">{{ publisher.name }}</h3>
-                    <p style="margin-top: 10px; color: #666;">{{ publisher.book_set.count }} Books</p>
+                <div class="book-card publisher-card" onclick="openPublisherModal(this)" data-name="{{ publisher.name }}" title="Click to view books">
+                    <h3 class="text-center">{{ publisher.name }}</h3>
+                    <p class="mt-10 text-muted">{{ publisher.book_set.count }} Books</p>
                     
-                    <div style="margin-top: 15px; display: flex; gap: 10px;">
-                        <button class="action-btn edit-btn" onclick="event.stopPropagation(); openPublisherModal(this.closest('.book-card'))" style="background-color: #17a2b8;" title="View Books">👁</button>
+                    <div class="mt-15 flex-gap-10">
+                        <button class="action-btn edit-btn btn-info" onclick="event.stopPropagation(); openPublisherModal(this.closest('.book-card'))" title="View Books">👁</button>
                         <button class="action-btn edit-btn" onclick="event.stopPropagation(); openEditPublisherModal('{{ publisher.id }}', '{{ publisher.name|escapejs }}')">✎</button>
-                        <form method="POST" action="{% url 'delete_publisher' %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this publisher?');">
+                        <form method="POST" action="{% url 'delete_publisher' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this publisher?');">
                             {% csrf_token %}
                             <input type="hidden" name="publisher_id" value="{{ publisher.id }}">
                             <button type="submit" class="action-btn delete-btn" onclick="event.stopPropagation();">🗑</button>
@@ -1170,13 +998,13 @@
                     </div>
 
                     <!-- Hidden Data for Modal -->
-                    <div class="publisher-books-data" style="display: none;">
+                    <div class="publisher-books-data d-none">
                         {% for book in publisher.book_set.all %}
                         <div class="modal-book-item">
                             <span class="modal-book-icon">📖</span>
                             <div>
                                 <strong>{{ book.title }}</strong>
-                                <br><span style="font-size: 0.9em; color: #666;">by {{ book.author.name }}</span>
+                                <br><span class="text-muted font-md">by {{ book.author.name }}</span>
                             </div>
                         </div>
                         {% empty %}
@@ -1185,7 +1013,7 @@
                     </div>
                 </div>
                 {% empty %}
-                <p style="grid-column: 1/-1; text-align: center;">No publishers found.</p>
+                <p class="text-center" style="grid-column: 1/-1;">No publishers found.</p>
                 {% endfor %}
             </div>
         </div>
@@ -1194,8 +1022,8 @@
     <div id="authorBioModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAuthorModal()">&times;</span>
-            <h2 id="modalAuthorName" style="margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Author Name</h2>
-            <div id="modalAuthorBio" style="line-height: 1.6; color: #333; font-size: 16px;">
+            <h2 id="modalAuthorName" class="modal-header-bordered">Author Name</h2>
+            <div id="modalAuthorBio" class="modal-bio">
             </div>
         </div>
     </div>
@@ -1204,8 +1032,8 @@
     <div id="authorBooksModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAuthorBooksModal()">&times;</span>
-            <h2 id="modalAuthorBooksName" style="margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Author Name</h2>
-            <div id="modalAuthorBooksList" style="max-height: 400px; overflow-y: auto;">
+            <h2 id="modalAuthorBooksName" class="modal-header-bordered">Author Name</h2>
+            <div id="modalAuthorBooksList" class="modal-list-container">
                 <!-- Books will be populated here -->
             </div>
         </div>
@@ -1216,17 +1044,17 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeAddAuthorModal()">&times;</span>
             <h2>Add New Author</h2>
-            <form id="addAuthorForm" method="POST" action="/add_author/" style="margin-top: 20px;">
+            <form id="addAuthorForm" method="POST" action="/add_author/" class="mt-20">
                 {% csrf_token %}
                 <div class="setting-item">
                     <label>Name of the Author</label>
-                    <input type="text" name="name" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <input type="text" name="name" required class="setting-input modal-input">
                 </div>
                 <div class="setting-item">
                     <label>Bio of the Author</label>
-                    <textarea name="bio" rows="5" class="setting-input" style="width: 100%; font-family: inherit; padding: 10px;"></textarea>
+                    <textarea name="bio" rows="5" class="setting-input modal-textarea"></textarea>
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Author</button>
+                <button type="submit" class="btn-primary w-100 mt-10">Save Author</button>
             </form>
         </div>
     </div>
@@ -1236,18 +1064,18 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeEditAuthorModal()">&times;</span>
             <h2>Edit Author</h2>
-            <form method="POST" action="/edit_author/" id="editAuthorForm" style="margin-top: 20px;">
+            <form method="POST" action="/edit_author/" id="editAuthorForm" class="mt-20">
                 {% csrf_token %}
                 <input type="hidden" id="editAuthorId" name="id">
                 <div class="setting-item">
                     <label>Name of the Author</label>
-                    <input type="text" id="editAuthorName" name="name" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <input type="text" id="editAuthorName" name="name" required class="setting-input modal-input">
                 </div>
                 <div class="setting-item">
                     <label>Bio of the Author</label>
-                    <textarea id="editAuthorBio" name="bio" rows="5" class="setting-input" style="width: 100%; font-family: inherit; padding: 10px;"></textarea>
+                    <textarea id="editAuthorBio" name="bio" rows="5" class="setting-input modal-textarea"></textarea>
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Author</button>
+                <button type="submit" class="btn-primary w-100 mt-10">Update Author</button>
             </form>
         </div>
     </div>
@@ -1257,54 +1085,54 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeAddBookModal()">&times;</span>
             <h2>Add New Book</h2>
-            <form id="addBookForm" method="POST" action="{% url 'add_book' %}" style="margin-top: 20px;">
+            <form id="addBookForm" method="POST" action="{% url 'add_book' %}" class="mt-20">
                 {% csrf_token %}
                 <div class="setting-item">
                     <label>Book Title</label>
-                    <input type="text" id="addBookTitle" name="title" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <input type="text" id="addBookTitle" name="title" required class="setting-input modal-input">
                 </div>
                 <div class="setting-item">
                     <label>Author</label>
-                    <div style="display: flex; gap: 10px;">
-                        <select name="author" class="setting-input" style="flex: 1; margin-bottom: 15px; padding: 10px;">
+                    <div class="flex-gap-10">
+                        <select name="author" class="setting-input flex-1 mb-15 p-10">
                             <option value="">Select Author</option>
                             {% for author in authors %}
                             <option value="{{ author.id }}">{{ author.name }}</option>
                             {% endfor %}
                         </select>
-                        <input type="text" id="addBookNewAuthor" name="new_author" placeholder="Or New Author" class="setting-input" style="flex: 1; margin-bottom: 15px; padding: 10px;">
+                        <input type="text" id="addBookNewAuthor" name="new_author" placeholder="Or New Author" class="setting-input flex-1 mb-15 p-10">
                     </div>
                 </div>
                 <div class="setting-item">
                     <label>Publisher</label>
-                    <div style="display: flex; gap: 10px;">
-                        <select name="publisher" class="setting-input" style="flex: 1; margin-bottom: 15px; padding: 10px;">
+                    <div class="flex-gap-10">
+                        <select name="publisher" class="setting-input flex-1 mb-15 p-10">
                             <option value="">Select Publisher</option>
                             {% for publisher in publishers %}
                             <option value="{{ publisher.id }}">{{ publisher.name }}</option>
                             {% endfor %}
                         </select>
-                        <input type="text" id="addBookNewPublisher" name="new_publisher" placeholder="Or New Publisher" class="setting-input" style="flex: 1; margin-bottom: 15px; padding: 10px;">
+                        <input type="text" id="addBookNewPublisher" name="new_publisher" placeholder="Or New Publisher" class="setting-input flex-1 mb-15 p-10">
                     </div>
                 </div>
                 <div class="setting-item">
                     <label>ISBN</label>
-                    <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                        <input type="text" id="addBookIsbnInput" name="isbn" required class="setting-input" style="flex: 1; padding: 10px;" placeholder="Enter ISBN to auto-fill">
-                        <button type="button" class="btn-primary" onclick="fetchBookDetails()" style="padding: 10px 15px; white-space: nowrap;">Auto-fill</button>
+                    <div class="flex-gap-10 mb-5">
+                        <input type="text" id="addBookIsbnInput" name="isbn" required class="setting-input flex-1 p-10" placeholder="Enter ISBN to auto-fill">
+                        <button type="button" class="btn-primary btn-filter-sm white-space-nowrap" onclick="fetchBookDetails()">Auto-fill</button>
                     </div>
-                    <small id="isbnFeedback" style="color: #666; display: block; margin-bottom: 15px; min-height: 18px;"></small>
+                    <small id="isbnFeedback" class="modal-feedback"></small>
                 </div>
-                <div class="setting-item" style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label>Total Quantity</label><input type="number" name="total_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
-                    <div style="flex: 1;"><label>Available Quantity</label><input type="number" name="available_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                <div class="setting-item flex-gap-10">
+                    <div class="flex-1"><label>Total Quantity</label><input type="number" name="total_quantity" required class="setting-input modal-input"></div>
+                    <div class="flex-1"><label>Available Quantity</label><input type="number" name="available_quantity" required class="setting-input modal-input"></div>
                 </div>
-                <div class="setting-item"><label>Image URL</label><input type="url" id="addBookImageUrl" name="image_url" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                <div class="setting-item"><label>Image URL</label><input type="url" id="addBookImageUrl" name="image_url" class="setting-input modal-input"></div>
                 <div class="setting-item">
                     <label>Rack / Shelf Location</label>
-                    <input type="text" id="addBookLocation" name="location" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;" placeholder="e.g., Aisle 4, Shelf B">
+                    <input type="text" id="addBookLocation" name="location" class="setting-input modal-input" placeholder="e.g., Aisle 4, Shelf B">
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Book</button>
+                <button type="submit" class="btn-primary w-100 mt-10">Save Book</button>
             </form>
         </div>
     </div>
@@ -1314,16 +1142,16 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeEditBookModal()">&times;</span>
             <h2>Edit Book</h2>
-            <form method="POST" action="/edit_book/" id="editBookForm" style="margin-top: 20px;">
+            <form method="POST" action="/edit_book/" id="editBookForm" class="mt-20">
                 {% csrf_token %}
                 <input type="hidden" id="editBookId" name="book_id">
                 <div class="setting-item">
                     <label>Book Title</label>
-                    <input type="text" id="editBookTitle" name="title" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <input type="text" id="editBookTitle" name="title" required class="setting-input modal-input">
                 </div>
                 <div class="setting-item">
                     <label>Author</label>
-                    <select id="editBookAuthor" name="author" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <select id="editBookAuthor" name="author" required class="setting-input modal-input">
                         <option value="">Select Author</option>
                         {% for author in authors %}
                         <option value="{{ author.id }}">{{ author.name }}</option>
@@ -1332,18 +1160,18 @@
                 </div>
                 <div class="setting-item">
                     <label>ISBN</label>
-                    <input type="text" id="editBookIsbn" name="isbn" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <input type="text" id="editBookIsbn" name="isbn" required class="setting-input modal-input">
                 </div>
-                <div class="setting-item" style="display: flex; gap: 10px;">
-                    <div style="flex: 1;"><label>Total Quantity</label><input type="number" id="editBookTotalQty" name="total_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
-                    <div style="flex: 1;"><label>Available Quantity</label><input type="number" id="editBookAvailQty" name="available_quantity" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                <div class="setting-item flex-gap-10">
+                    <div class="flex-1"><label>Total Quantity</label><input type="number" id="editBookTotalQty" name="total_quantity" required class="setting-input modal-input"></div>
+                    <div class="flex-1"><label>Available Quantity</label><input type="number" id="editBookAvailQty" name="available_quantity" required class="setting-input modal-input"></div>
                 </div>
-                <div class="setting-item"><label>Image URL</label><input type="url" id="editBookImage" name="image_url" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;"></div>
+                <div class="setting-item"><label>Image URL</label><input type="url" id="editBookImage" name="image_url" class="setting-input modal-input"></div>
                 <div class="setting-item">
                     <label>Rack / Shelf Location</label>
-                    <input type="text" id="editBookLocation" name="location" class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <input type="text" id="editBookLocation" name="location" class="setting-input modal-input">
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Book</button>
+                <button type="submit" class="btn-primary w-100 mt-10">Update Book</button>
             </form>
         </div>
     </div>
@@ -1353,13 +1181,13 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeAddPublisherModal()">&times;</span>
             <h2>Add New Publisher</h2>
-            <form id="addPublisherForm" method="POST" action="/add_publisher/" style="margin-top: 20px;">
+            <form id="addPublisherForm" method="POST" action="/add_publisher/" class="mt-20">
                 {% csrf_token %}
                 <div class="setting-item">
                     <label>Publisher Name</label>
-                    <input type="text" name="name" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <input type="text" name="name" required class="setting-input modal-input">
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Publisher</button>
+                <button type="submit" class="btn-primary w-100 mt-10">Save Publisher</button>
             </form>
         </div>
     </div>
@@ -1369,14 +1197,14 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeEditPublisherModal()">&times;</span>
             <h2>Edit Publisher</h2>
-            <form method="POST" action="{% url 'edit_publisher' %}" style="margin-top: 20px;">
+            <form method="POST" action="{% url 'edit_publisher' %}" class="mt-20">
                 {% csrf_token %}
                 <input type="hidden" id="editPublisherId" name="id">
                 <div class="setting-item">
                     <label>Publisher Name</label>
-                    <input type="text" id="editPublisherName" name="name" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <input type="text" id="editPublisherName" name="name" required class="setting-input modal-input">
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Update Publisher</button>
+                <button type="submit" class="btn-primary w-100 mt-10">Update Publisher</button>
             </form>
         </div>
     </div>
@@ -1385,8 +1213,8 @@
     <div id="publisherBooksModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closePublisherModal()">&times;</span>
-            <h2 id="modalPublisherName" style="margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">Publisher Name</h2>
-            <div id="modalBooksList" style="max-height: 400px; overflow-y: auto;">
+            <h2 id="modalPublisherName" class="modal-header-bordered">Publisher Name</h2>
+            <div id="modalBooksList" class="modal-list-container">
             </div>
         </div>
     </div>
@@ -1396,11 +1224,11 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeAddUserModal()">&times;</span>
             <h2>Add New User</h2>
-            <form method="POST" action="/add_user/" style="margin-top: 20px;">
+            <form method="POST" action="/add_user/" class="mt-20">
                 {% csrf_token %}
                 <div class="setting-item">
                     <label>Username</label>
-                    <input type="text" name="username" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <input type="text" name="username" required class="setting-input modal-input">
                 </div>
                 <div class="setting-item">
                     <label>Email</label>
@@ -1675,24 +1503,13 @@
     </div>
 
     <script>
-        const overdueData = {{ overdue_data_json|safe }};
+        // We keep these variables here because they use Django template tags
+        // which cannot be processed inside a static .js file.
+        const overdueData = JSON.parse('{{ overdue_data_json|escapejs }}');
         const currentAdminName = "{{ user.username|escapejs }}";
         const currentLibraryName = "{{ lib_settings.library_name|escapejs }}";
     </script>
 
     <script src="{% static 'admin_script.js' %}?v=1.3"></script>
-
-    {% if search_query %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            showPage('books');
-        });
-    </script>
-    {% endif %}
-
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-    </script>
 </body>
 </html>

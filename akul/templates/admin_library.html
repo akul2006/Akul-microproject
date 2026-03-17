@@ -7,8 +7,8 @@
     <title>{{ lib_settings.library_name|default:"BookSphere" }} | BookSphere</title>
     <link rel="stylesheet" href="{% static 'admin_styles.css' %}">
     <link rel="icon" type="image/x-icon" href="{% static 'img/logo.ico' %}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -45,14 +45,14 @@
             color: var(--text-secondary) !important;
         }
 
-        .chart-container, .activity-container, .issued-books-section, .top-authors-section, .book-card, .setting-card, .users-table-container, .requests-table-container, .penalties-table-container, .settings-content {
+        .activity-container, .issued-books-section, .top-authors-section, .book-card, .setting-card, .users-table-container, .penalties-table-container, .settings-content {
             background-color: var(--card-bg) !important;
             color: var(--text-color) !important;
             border: 1px solid var(--border-color) !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
         }
 
-        .stat-card {
+        .card {
             background-color: var(--card-bg) !important;
             color: var(--text-color) !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
@@ -105,10 +105,6 @@
             border-left-color: #007bff !important;
         }
 
-        .sidebar-footer {
-            border-top: 1px solid var(--border-color) !important;
-        }
-
         /* Modal Styles */
         .modal {
             display: none; 
@@ -131,22 +127,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             color: var(--text-color);
         }
-        .close-modal {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close-modal:hover { color: #000; }
-        .modal-book-item {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            align-items: center;
-        }
-        .modal-book-item:last-child { border-bottom: none; }
-        .modal-book-icon { margin-right: 10px; font-size: 1.2em; }
 
         .notification-dropdown {
             background-color: var(--card-bg) !important;
@@ -211,91 +191,61 @@
             <ul>
                 <li>
                     <a href="#" onclick="showPage('dashboard')" class="nav-link active">
-                        <span class="icon">📊</span>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" onclick="showPage('books')" class="nav-link">
-                        <span class="icon">📚</span>
                         <span>Books</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" onclick="showPage('circulations')" class="nav-link">
-                        <span class="icon">🔄</span>
                         <span>Books Circulation</span>
                     </a>
                 </li>
-                <!-- <li>
-                    <a href="#" onclick="showPage('requests')" class="nav-link">
-                        <span class="icon">📝</span>
-                        <span>Books Requests</span>
-                    </a>
-                </li> -->
                 <li>
                     <a href="#" onclick="showPage('students')" class="nav-link">
-                        <span class="icon">👥</span>
                         <span>Students</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" onclick="showPage('publishers')" class="nav-link">
-                        <span class="icon">🏢</span>
                         <span>Publishers</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" onclick="showPage('authors')" class="nav-link">
-                        <span class="icon">✍️</span>
                         <span>Authors</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" onclick="showPage('users')" class="nav-link">
-                        <span class="icon">👤</span>
                         <span>Librarians</span>
                     </a>
                 </li>
-                <!-- <li>
-                    <a href="#" onclick="showPage('roles')" class="nav-link">
-                        <span class="icon">🔐</span>
-                        <span>Roles & Permission</span>
-                    </a>
-                </li> -->
                 <li>
                     <a href="#" onclick="showPage('penalties')" class="nav-link">
-                        <span class="icon">⚠️</span>
                         <span>Penalties</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" onclick="showPage('audit_logs')" class="nav-link">
-                        <span class="icon">📜</span>
                         <span>Audit Logs</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" onclick="showPage('email_logs')" class="nav-link">
-                        <span class="icon">📧</span>
                         <span>Email Logs</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" onclick="showPage('settings')" class="nav-link">
-                        <span class="icon">⚙️</span>
                         <span>Settings</span>
                     </a>
                 </li>
             </ul>
         </nav>
-        
-        <!-- <div class="sidebar-footer">
-            <a href="{% url 'admin_logout' %}" class="nav-link logout-btn">
-                <span class="icon">⏻</span>
-                <span>Logout</span>
-            </a>
-        </div> -->
     </div>
 
     <!-- Main Content -->
@@ -312,10 +262,6 @@
                 </div>
             </div>
             <div class="header-right">
-                <div class="search-box">
-                    <!-- <input type="text" id="searchInput" placeholder="Search Books">
-                    <span class="search-icon">🔍</span> -->
-                </div>
                 <div id="bellIcon" class="notification-icon" onclick="toggleNotifications(event)">
                     🔔
                     {% if unread_count > 0 %}
@@ -334,7 +280,7 @@
 
         <!-- Profile Dropdown -->
         <div id="profileDropdown" class="profile-dropdown">
-            <a href="{% url 'admin_logout' %}"><span style="margin-right: 10px; font-size: 1.2em;">⏻</span> Logout</a>
+            <a href="{% url 'admin_logout' %}"> Logout</a>
         </div>
 
         <!-- Notification Dropdown -->
@@ -356,12 +302,6 @@
             </div>
             {% for notification in notifications %}
             <div class="notification-item" style="{% if not notification.read %}background-color: #f0f7ff; border-left: 3px solid #007bff;{% endif %}">
-                <span class="notif-icon">
-                    {% if 'request' in notification.message|lower %}📚
-                    {% elif 'overdue' in notification.message|lower %}⚠️
-                    {% elif 'student' in notification.message|lower %}👤
-                    {% else %}🔔{% endif %}
-                </span>
                 <div class="notif-content">
                     <p>{{ notification.message }}</p>
                     <span class="notif-time">{{ notification.created_at|timesince }} ago</span>
@@ -397,41 +337,60 @@
         <!-- Dashboard Page -->
         <div id="dashboard" class="page active">
             <!-- Statistics Cards -->
-            <div class="stats-container">
-                <div class="stat-card blue">
-                    <div class="stat-icon">📚</div>
-                    <div class="stat-info">
-                        <h3 id="totalBooks">{{ total_books }}</h3>
-                        <p>Total Books</p>
+            <div class="dashboard-container">
+                <div class="card purple">
+                    <div class="card-content">
+                        <div class="icon-box"><i data-lucide="book"></i></div>
+                        <div class="stats">
+                            <span class="number" id="totalBooks">{{ total_books }}</span>
+                            <span class="label">Total Books</span>
+                        </div>
                     </div>
+                    <div class="bottom-bar"></div>
                 </div>
-                <div class="stat-card green">
-                    <div class="stat-icon">👥</div>
-                    <div class="stat-info">
-                        <h3 id="totalStudents">{{ total_students }}</h3>
-                        <p>Total Students</p>
+
+                <div class="card green">
+                    <div class="card-content">
+                        <div class="icon-box"><i data-lucide="users"></i></div>
+                        <div class="stats">
+                            <span class="number" id="totalStudents">{{ total_students }}</span>
+                            <span class="label">Total Students</span>
+                        </div>
                     </div>
+                    <div class="bottom-bar"></div>
                 </div>
-                <div class="stat-card cyan">
-                    <div class="stat-icon">📖</div>
-                    <div class="stat-info">
-                        <h3 id="issuedBooks">{{ issued_books_count }}</h3>
-                        <p>Issued Books</p>
+
+                <div class="card teal">
+                    <div class="card-content">
+                        <div class="icon-box"><i data-lucide="book-open"></i></div>
+                        <div class="stats">
+                            <span class="number" id="issuedBooks">{{ issued_books_count }}</span>
+                            <span class="label">Issued Books</span>
+                        </div>
                     </div>
+                    <div class="bottom-bar"></div>
                 </div>
-                <div class="stat-card yellow">
-                    <div class="stat-icon">📑</div>
-                    <div class="stat-info">
-                        <h3 id="reservedBooks">{{ reserved_books_count }}</h3>
-                        <p>Reserved Books</p>
+
+                <div class="card yellow">
+                    <div class="card-content">
+                        <div class="icon-box"><i data-lucide="monitor"></i></div>
+                        <div class="stats">
+                            <span class="number" id="reservedBooks">{{ reserved_books_count }}</span>
+                            <span class="label">Reserved Books</span>
+                        </div>
                     </div>
+                    <div class="bottom-bar"></div>
                 </div>
-                <div class="stat-card red">
-                    <div class="stat-icon">⏰</div>
-                    <div class="stat-info">
-                        <h3 id="overdueBooks">{{ overdue_books_count }}</h3>
-                        <p>Overdue Books</p>
+
+                <div class="card red">
+                    <div class="card-content">
+                        <div class="icon-box"><i data-lucide="history"></i></div>
+                        <div class="stats">
+                            <span class="number" id="overdueBooks">{{ overdue_books_count }}</span>
+                            <span class="label">Overdue Books</span>
+                        </div>
                     </div>
+                    <div class="bottom-bar"></div>
                 </div>
             </div>
 
@@ -439,40 +398,6 @@
             <div class="dashboard-content">
                 <!-- Left Section -->
                 <div class="dashboard-left">
-                    <!-- Library Usage Chart
-                    <div class="chart-container" style="position: relative; width: 100%;">
-                        <div class="chart-header">
-                            <h2>Library Uses</h2>
-                            <select class="filter-dropdown" onchange="window.location.href='?tab=dashboard&chart_range='+this.value">
-                                <option value="6_months" {% if request.GET.chart_range == '6_months' %}selected{% endif %}>Last 6 months</option>
-                                <option value="last_year" {% if request.GET.chart_range == 'last_year' %}selected{% endif %}>Last year</option>
-                                <option value="last_week" {% if request.GET.chart_range == 'last_week' %}selected{% endif %}>Last week</option>
-                            </select>
-                        </div>
-                        <div class="chart-legend">
-                            <span class="legend-item"><span class="legend-color members"></span>Students</span>
-                            <span class="legend-item"><span class="legend-color issues"></span>Issues</span>
-                        </div>
-                        <div style="position: relative; height: 300px; width: 100%;">
-                            <canvas id="usageChart"></canvas>
-                        </div>
-                    </div> -->
-
-                    <!-- Revenue/Penalty Chart
-                    <div class="chart-container" style="position: relative; width: 100%;">
-                        <div class="chart-header">
-                            <h2>Revenue</h2>
-                            <select class="filter-dropdown">
-                                <option>Last 8 months</option>
-                                <option>Last 6 months</option>
-                                <option>Last year</option>
-                            </select>
-                        </div>
-                        <div style="position: relative; height: 300px; width: 100%;">
-                            <canvas id="revenueChart"></canvas>
-                        </div>
-                    </div> -->
-
                     <!-- Library Activity Table -->
                     <div class="activity-container">
                         <div class="activity-header">
@@ -493,7 +418,6 @@
                                 <tr>
                                     <td>
                                         <div style="display: flex; align-items: center; gap: 10px;">
-                                            <span style="font-size: 1.2em;">📖</span>
                                             <div>
                                                 <strong>{{ circ.book.title }}</strong>
                                                 <br><span style="font-size: 0.8em; color: #666;">{{ circ.book.author.name }}</span>
@@ -502,7 +426,6 @@
                                     </td>
                                     <td>
                                         <div style="display: flex; align-items: center; gap: 10px;">
-                                            <img src="https://ui-avatars.com/api/?name={{ circ.student.name }}&background=random" alt="{{ circ.student.name }}" style="width: 24px; height: 24px; border-radius: 50%;">
                                             <span>{{ circ.student.name }}</span>
                                         </div>
                                     </td>
@@ -529,35 +452,57 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Recently Added Books Table -->
+                    <div class="activity-container" style="margin-top: 30px;">
+                        <div class="activity-header">
+                            <h2>Recently Added Books</h2>
+                        </div>
+                        <table class="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Book Info</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for book in books|slice:":4" %}
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            {% if book.thumbnail_link %}
+                                            <img src="{{ book.thumbnail_link }}" alt="{{ book.title }}" style="width: 32px; height: 45px; object-fit: cover; border-radius: 4px;">
+                                            {% else %}
+                                            <div style="width: 32px; height: 45px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 16px;">📖</div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ book.title }}</strong>
+                                                <br><span style="font-size: 0.8em; color: #666;">by {{ book.author.name|default:book.author }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span style="font-size: 0.9em; color: #555;">{{ book.location|default:"Not set" }}</span></td>
+                                    <td>
+                                        {% if book.available_quantity > 0 %}
+                                        <span class="status-badge returned">Available</span>
+                                        {% else %}
+                                        <span class="status-badge" style="background-color: #f8d7da; color: #721c24;">Unavailable</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" style="text-align: center; padding: 20px; color: #666;">No books available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- Right Sidebar -->
                 <div class="dashboard-right">
-                    <!-- Issued Books -->
-                    <!-- <div class="issued-books-section">
-                        <div class="section-header">
-                            <h2>Issued Books</h2>
-                            <select class="filter-dropdown">
-                                <option>This month</option>
-                                <option>This week</option>
-                                <option>Today</option>
-                            </select>
-                        </div>
-                        <div id="issuedBooksList" class="issued-books-list">
-                            {% for circ in circulations|slice:":4" %}
-                            <div class="issued-book-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
-                                <div>
-                                    <h4 style="margin: 0; font-size: 14px;">{{ circ.book.title }}</h4>
-                                    <p style="margin: 0; font-size: 12px; color: #666;">To: {{ circ.student.name }}</p>
-                                </div>
-                                <span style="font-size: 12px; color: #888;">{{ circ.issue_date|date:"M d" }}</span>
-                            </div>
-                            {% empty %}
-                            <p style="padding: 15px; text-align: center; color: #6c757d;">No issued books.</p>
-                            {% endfor %}
-                        </div>
-                    </div> -->
-
                     <!-- Overdue Books -->
                     <div class="issued-books-section" style="border-color: #ffcdd2;">
                         <div class="section-header" style="background-color: #ffffff; border-bottom: 1px solid #ffffff;">
@@ -600,7 +545,7 @@
                                 <div class="author-info">
                                     <h3>{{ author.name }}</h3>
                                     <div class="author-stats">
-                                        <span>📚 {{ author.book_set.count }} Books</span>
+                                        <span>{{ author.book_set.count }} Books</span>
                                     </div>
                                 </div>
                             </div>
@@ -651,7 +596,7 @@
                             <td>
                                 <strong>{{ book.title }}</strong><br>
                                 <span style="font-size: 0.85em; color: #666;">
-                                    {% if book.location %}📍 {{ book.location }}{% else %}Location not set{% endif %}
+                                    {% if book.location %} {{ book.location }}{% else %}Location not set{% endif %}
                                 </span>
                             </td>
                             <td>{{ book.author.name|default:book.author }}</td>
@@ -726,7 +671,6 @@
                                 <div class="author-books-data" style="display: none;">
                                     {% for book in author.book_set.all %}
                                     <div class="modal-book-item">
-                                        <span class="modal-book-icon">📖</span>
                                         <div>
                                             <strong>{{ book.title }}</strong>
                                             <br><span style="font-size: 0.9em; color: #666;">ISBN: {{ book.isbn }}</span>
@@ -867,8 +811,32 @@
         <div id="audit_logs" class="page">
             <div class="page-header">
                 <h1>Audit Logs</h1>
-                <p style="color: #666; margin-top: 5px;">System activity tracking and accountability.</p>
             </div>
+            
+            <div class="filter-bar" style="margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <form method="GET" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="hidden" name="tab" value="audit_logs">
+                    
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label for="audit_start" style="font-size: 14px; color: #333;">From:</label>
+                        <input type="datetime-local" id="audit_start" name="audit_start" value="{{ request.GET.audit_start|default:'' }}" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label for="audit_end" style="font-size: 14px; color: #333;">To:</label>
+                        <input type="datetime-local" id="audit_end" name="audit_end" value="{{ request.GET.audit_end|default:'' }}" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+
+                    <button type="button" class="btn-primary" style="background-color: #17a2b8; padding: 10px 15px; font-size: 13px;" onclick="setAuditPreset('today')">Today</button>
+                    <button type="button" class="btn-primary" style="background-color: #6c757d; padding: 10px 15px; font-size: 13px;" onclick="setAuditPreset('all_time')">All Time</button>
+
+                    <button type="submit" class="btn-primary" style="padding: 10px 20px;">Filter</button>
+                    {% if request.GET.audit_start or request.GET.audit_end %}
+                    <a href="{% url 'admin_dashboard' %}?tab=audit_logs" class="btn-primary" style="background-color: #6c757d; text-decoration: none; padding: 10px 20px; display: flex; align-items: center;">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+
             <div class="users-table-container" style="padding: 0;">
                 <table class="data-table">
                     <thead>
@@ -994,13 +962,6 @@
                                 <label for="enableEmails" style="margin: 0; cursor: pointer;">Enable Automated Email Notifications</label>
                             </div>
                         </div>
-                        <!-- <div class="setting-card">
-                            <h3>Maintenance</h3>=
-                            <h3>Maintenance</h3>
-                            <div class="setting-tem">
-                            a   <a href="{% url 'fix_sequences' %}" class="btn-primary" style="text-decoration: none; display: inline-block; text-align: center; background-color: #28a745;">Fix Database IDs</a>
-                            </div>
-                        </div> -->
                     </div>
                     <button type="submit" class="btn-primary save-settings">Save Settings</button>
                 </form>
@@ -1013,7 +974,7 @@
                 <h1>Books Circulation</h1>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn-primary" onclick="openGenerateReportModal()" style="background-color: #6c757d; display: flex; align-items: center; justify-content: center;">Generate Report</button>
-                    <button class="btn-primary" onclick="openScanBarcodeModal()" style="background-color: #17a2b8;">📷 Scan Barcode</button>
+                    <button class="btn-primary" onclick="openScanBarcodeModal()" style="background-color: #17a2b8;">Scan Barcode</button>
                     <button class="btn-primary" onclick="openIssueBookModal()">+ Issue Book</button>
                 </div>
             </div>
@@ -1730,87 +1691,8 @@
     {% endif %}
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Library Uses Chart
-            const ctx = document.getElementById('usageChart');
-            if (ctx) {
-                window.usageChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: {{ chart_labels|safe }},
-                        datasets: [{
-                            label: 'Students',
-                            data: {{ student_counts|safe }},
-                            borderColor: '#4A90E2', // Blue
-                            backgroundColor: 'rgba(74, 144, 226, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }, {
-                            label: 'Issues',
-                            data: {{ issue_counts|safe }},
-                            borderColor: '#50E3C2', // Teal/Green
-                            backgroundColor: 'rgba(80, 227, 194, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    borderDash: [5, 5]
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        });
+        // Initialize Lucide icons
+        lucide.createIcons();
     </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Revenue Chart
-            const ctxRevenue = document.getElementById('revenueChart');
-            if (ctxRevenue) {
-                window.revenueChart = new Chart(ctxRevenue, {
-                    type: 'bar',
-                    data: {
-                        labels: {{ chart_labels|safe }},
-                        datasets: [{
-                            label: 'Revenue (₹)',
-                            data: {{ revenue_data|safe }},
-                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-        });
-    </script>
-
 </body>
 </html>

@@ -294,12 +294,6 @@ function closeEditBookModal() {
     }
 }
 
-function deleteBook(id) {
-    if (confirm("Are you sure you want to delete this book?")) {
-        window.location.href = "/delete_book/" + id + "/";
-    }
-}
-
 function openAddPublisherModal() {
     document.getElementById('addPublisherModal').style.display = "block";
 }
@@ -389,37 +383,6 @@ function openIssueBookModal() {
 
 function closeIssueBookModal() {
     const modal = document.getElementById('issueBookModal');
-    if (modal) {
-        modal.style.display = "none";
-        const form = modal.querySelector('form');
-        if (form) form.reset();
-    }
-}
-
-function openAddMemberModal() {
-    document.getElementById('addMemberModal').style.display = "block";
-}
-
-function closeAddMemberModal() {
-    const modal = document.getElementById('addMemberModal');
-    if (modal) {
-        modal.style.display = "none";
-        const form = modal.querySelector('form');
-        if (form) form.reset();
-    }
-}
-
-function openEditMemberModal(id, name, email, phone, address) {
-    document.getElementById('editMemberId').value = id;
-    document.getElementById('editMemberName').value = name;
-    document.getElementById('editMemberEmail').value = email;
-    document.getElementById('editMemberPhone').value = phone;
-    document.getElementById('editMemberAddress').value = address;
-    document.getElementById('editMemberModal').style.display = "block";
-}
-
-function closeEditMemberModal() {
-    const modal = document.getElementById('editMemberModal');
     if (modal) {
         modal.style.display = "none";
         const form = modal.querySelector('form');
@@ -665,11 +628,8 @@ window.onclick = function (event) {
     const addUserModal = document.getElementById('addUserModal');
     const editUserModal = document.getElementById('editUserModal');
     const addPenaltyModal = document.getElementById('addPenaltyModal');
-    const addMemberModal = document.getElementById('addMemberModal');
-    const editMemberModal = document.getElementById('editMemberModal');
     const issueBookModal = document.getElementById('issueBookModal');
     const emailStudentModal = document.getElementById('emailStudentModal');
-    const viewQRModal = document.getElementById('viewQRModal');
     const scanQRModal = document.getElementById('scanQRModal');
     const generateReportModal = document.getElementById('generateReportModal');
     const addStudentModal = document.getElementById('addStudentModal');
@@ -699,10 +659,6 @@ window.onclick = function (event) {
         closeEditUserModal();
     } else if (addPenaltyModal && event.target == addPenaltyModal) {
         closeAddPenaltyModal();
-    } else if (addMemberModal && event.target == addMemberModal) {
-        closeAddMemberModal();
-    } else if (editMemberModal && event.target == editMemberModal) {
-        closeEditMemberModal();
     } else if (issueBookModal && event.target == issueBookModal) {
         closeIssueBookModal();
     } else if (emailStudentModal && event.target == emailStudentModal) {
@@ -724,4 +680,28 @@ function toggleDateInputs(checkbox) {
         input.disabled = checkbox.checked;
         if (checkbox.checked) input.value = '';
     });
+}
+
+function setAuditPreset(preset) {
+    const startInput = document.getElementById('audit_start');
+    const endInput = document.getElementById('audit_end');
+    
+    if (!startInput || !endInput) return;
+
+    if (preset === 'today') {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        
+        const formatDT = (dt) => {
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+        };
+
+        startInput.value = formatDT(start);
+        endInput.value = formatDT(end);
+    } else if (preset === 'all_time') {
+        startInput.value = '';
+        endInput.value = '';
+    }
 }

@@ -9,6 +9,7 @@ from django.db import connection
 from django.core.management.color import no_style
 from datetime import date, datetime, timedelta
 import json
+import csv
 from django.db.models import Sum, Count, Q
 from django.http import FileResponse
 import io
@@ -539,6 +540,79 @@ def add_book(request):
         return redirect(reverse('admin_dashboard') + '?tab=books')
     return redirect('admin_dashboard')
 
+def export_books_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="books_export.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['Title', 'Author', 'Publisher', 'ISBN', 'Total Quantity', 'Available Quantity', 'Location', 'Thumbnail URL'])
+    
+    books = Book.objects.all().select_related('author', 'publisher')
+    for book in books:
+        author_name = book.author.name if book.author else ''
+        publisher_name = book.publisher.name if book.publisher else ''
+        writer.writerow([book.title, author_name, publisher_name, book.isbn, book.quantity, book.available_quantity, book.location, book.thumbnail_link])
+        
+    log_audit(request, "exported books to CSV.")
+    return response
+
+def import_books_csv(request):
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+        
+        if not csv_file.name.endswith('.csv'):
+            add_notification("Error: File is not a CSV.")
+            return redirect(reverse('admin_dashboard') + '?tab=books')
+            
+        try:
+            decoded_file = csv_file.read().decode('utf-8-sig').splitlines()
+            reader = csv.reader(decoded_file)
+            headers = next(reader, None) # skip header
+            
+            success_count = 0
+            for row in reader:
+                if len(row) >= 4:
+                    title = row[0].strip()
+                    author_name = row[1].strip()
+                    publisher_name = row[2].strip()
+                    isbn = row[3].strip()
+                    qty = int(row[4]) if len(row) > 4 and row[4].strip().isdigit() else 1
+                    avail_qty = int(row[5]) if len(row) > 5 and row[5].strip().isdigit() else qty
+                    location = row[6].strip() if len(row) > 6 else ''
+                    thumbnail = row[7].strip() if len(row) > 7 else ''
+                    
+                    if title and isbn:
+                        author, _ = Author.objects.get_or_create(name=author_name or "Unknown Author")
+                        publisher, _ = Publisher.objects.get_or_create(name=publisher_name or "Unknown Publisher")
+                        
+                        if not Book.objects.filter(isbn=isbn).exists():
+                            try:
+                                Book.objects.create(
+                                    title=title, author=author, publisher=publisher, isbn=isbn,
+                                    quantity=qty, available_quantity=avail_qty, location=location,
+                                    thumbnail_link=thumbnail
+                                )
+                                success_count += 1
+                            except IntegrityError as e:
+                                if 'pkey' in str(e) or 'PRIMARY' in str(e):
+                                    sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Book, Author, Publisher])
+                                    with connection.cursor() as cursor:
+                                        for sql in sequence_sql:
+                                            cursor.execute(sql)
+                                    Book.objects.create(
+                                        title=title, author=author, publisher=publisher, isbn=isbn,
+                                        quantity=qty, available_quantity=avail_qty, location=location,
+                                        thumbnail_link=thumbnail
+                                    )
+                                    success_count += 1
+            
+            add_notification(f"Successfully imported {success_count} books.")
+            log_audit(request, f"imported {success_count} books from CSV.")
+        except Exception as e:
+            add_notification(f"Error importing CSV: {str(e)}")
+            
+    return redirect(reverse('admin_dashboard') + '?tab=books')
+
 def add_author(request):
     if request.method == "POST":
         name = request.POST.get('name')
@@ -620,6 +694,55 @@ def add_student(request):
         Student.objects.create(name=name, email=email, phone=phone, address=address)
         log_audit(request, f"added a new student '{name}'.")
         return redirect(reverse('admin_dashboard') + '?tab=students')
+
+def export_students_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="students_export.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['Name', 'Email', 'Phone', 'Address', 'Joined Date'])
+    
+    students = Student.objects.all()
+    for student in students:
+        writer.writerow([student.name, student.email, student.phone, student.address, student.joined_date.strftime('%Y-%m-%d')])
+        
+    log_audit(request, "exported students to CSV.")
+    return response
+
+def import_students_csv(request):
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+        
+        if not csv_file.name.endswith('.csv'):
+            add_notification("Error: File is not a CSV.")
+            return redirect(reverse('admin_dashboard') + '?tab=students')
+            
+        try:
+            decoded_file = csv_file.read().decode('utf-8-sig').splitlines()
+            reader = csv.reader(decoded_file)
+            headers = next(reader, None) # skip header
+            
+            success_count = 0
+            for row in reader:
+                if len(row) >= 2:
+                    name = row[0].strip()
+                    email = row[1].strip()
+                    phone = row[2].strip() if len(row) > 2 else ''
+                    address = row[3].strip() if len(row) > 3 else ''
+                    
+                    if name and email:
+                        if not Student.objects.filter(email=email).exists():
+                            Student.objects.create(
+                                name=name, email=email, phone=phone, address=address
+                            )
+                            success_count += 1
+            
+            add_notification(f"Successfully imported {success_count} students.")
+            log_audit(request, f"imported {success_count} students from CSV.")
+        except Exception as e:
+            add_notification(f"Error importing CSV: {str(e)}")
+            
+    return redirect(reverse('admin_dashboard') + '?tab=students')
 
 def edit_book(request):
     if request.method == "POST":

@@ -391,6 +391,10 @@
             <div class="page-header">
                 <h1>Books Management</h1>
                 <div class="flex-gap-10">
+                    <button class="btn-primary btn-info" onclick="openImportBooksModal()">Import CSV</button>
+                    <form method="GET" action="{% url 'export_books_csv' %}" style="margin: 0; display: inline-flex;">
+                        <button type="submit" class="btn-primary btn-secondary">Export CSV</button>
+                    </form>
                     <button class="btn-primary" onclick="openAddBookModal()">+ Add New Book</button>
                 </div>
             </div>
@@ -891,7 +895,13 @@
         <div id="students" class="page">
             <div class="page-header">
                 <h1>Students Management</h1>
-                <button class="btn-primary" onclick="openAddStudentModal()">+ Add New Student</button>
+                <div class="flex-gap-10">
+                    <button class="btn-primary btn-info" onclick="openImportStudentsModal()">Import CSV</button>
+                    <form method="GET" action="{% url 'export_students_csv' %}" style="margin: 0; display: inline-flex;">
+                        <button type="submit" class="btn-primary btn-secondary">Export CSV</button>
+                    </form>
+                    <button class="btn-primary" onclick="openAddStudentModal()">+ Add New Student</button>
+                </div>
             </div>
             
             <div class="filter-bar">
@@ -1137,6 +1147,23 @@
         </div>
     </div>
 
+    <!-- Import Books Modal -->
+    <div id="importBooksModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeImportBooksModal()">&times;</span>
+            <h2>Import Books from CSV</h2>
+            <form method="POST" action="{% url 'import_books_csv' %}" enctype="multipart/form-data" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="setting-item">
+                    <label>Select CSV File</label>
+                    <input type="file" name="csv_file" accept=".csv" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <small style="color: #666; display: block; margin-top: 5px;">Expected format: Title, Author, Publisher, ISBN, Total Quantity, Available Quantity, Location, Thumbnail URL</small>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Upload and Import</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Edit Book Modal -->
     <div id="editBookModal" class="modal">
         <div class="modal-content">
@@ -1319,6 +1346,23 @@
                     <input type="number" name="amount" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
                 </div>
                 <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Save Penalty</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Import Students Modal -->
+    <div id="importStudentsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeImportStudentsModal()">&times;</span>
+            <h2>Import Students from CSV</h2>
+            <form method="POST" action="{% url 'import_students_csv' %}" enctype="multipart/form-data" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="setting-item">
+                    <label>Select CSV File</label>
+                    <input type="file" name="csv_file" accept=".csv" required class="setting-input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
+                    <small style="color: #666; display: block; margin-top: 5px;">Expected format: Name, Email, Phone, Address</small>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">Upload and Import</button>
             </form>
         </div>
     </div>

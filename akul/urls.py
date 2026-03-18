@@ -28,4 +28,8 @@ urlpatterns = [
     path('edit_student/', views.edit_student, name='edit_student'),
     path('delete_student/', views.delete_student, name='delete_student'),
     path('update_settings/', views.update_settings, name='update_settings'),
-    ]
+    path('export_books_csv/', views.export_books_csv, name='export_books_csv'),
+    path('import_books_csv/', views.import_books_csv, name='import_books_csv'),
+    path('export_students_csv/', views.export_students_csv, name='export_students_csv'),
+    path('import_students_csv/', views.import_students_csv, name='import_students_csv'),
+]

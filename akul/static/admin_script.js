@@ -199,6 +199,19 @@ function closeAddBookModal() {
     }
 }
 
+function openImportBooksModal() {
+    document.getElementById('importBooksModal').style.display = "block";
+}
+
+function closeImportBooksModal() {
+    const modal = document.getElementById('importBooksModal');
+    if (modal) {
+        modal.style.display = "none";
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
+}
+
 async function fetchBookDetails() {
     const isbnInput = document.getElementById('addBookIsbnInput');
     const feedback = document.getElementById('isbnFeedback');
@@ -403,6 +416,19 @@ function openAddStudentModal() {
 
 function closeAddStudentModal() {
     const modal = document.getElementById('addStudentModal');
+    if (modal) {
+        modal.style.display = 'none';
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
+}
+
+function openImportStudentsModal() {
+    document.getElementById('importStudentsModal').style.display = 'block';
+}
+
+function closeImportStudentsModal() {
+    const modal = document.getElementById('importStudentsModal');
     if (modal) {
         modal.style.display = 'none';
         const form = modal.querySelector('form');
@@ -641,6 +667,8 @@ window.onclick = function (event) {
     const generateReportModal = document.getElementById('generateReportModal');
     const addStudentModal = document.getElementById('addStudentModal');
     const editStudentModal = document.getElementById('editStudentModal');
+    const importBooksModal = document.getElementById('importBooksModal');
+    const importStudentsModal = document.getElementById('importStudentsModal');
 
     if (modal && event.target == modal) {
         closePublisherModal();
@@ -678,6 +706,10 @@ window.onclick = function (event) {
         if (typeof closeAddStudentModal === 'function') closeAddStudentModal();
     } else if (editStudentModal && event.target == editStudentModal) {
         if (typeof closeEditStudentModal === 'function') closeEditStudentModal();
+    } else if (importBooksModal && event.target == importBooksModal) {
+        closeImportBooksModal();
+    } else if (importStudentsModal && event.target == importStudentsModal) {
+        closeImportStudentsModal();
     }
 }
 

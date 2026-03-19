@@ -1198,6 +1198,10 @@
                     <label>Rack / Shelf Location</label>
                     <input type="text" id="editBookLocation" name="location" class="setting-input modal-input">
                 </div>
+                <div id="similarBooksContainer" style="display: none; background: #f3e8ff; padding: 10px; margin-bottom: 15px; border-radius: 5px; margin-top: 15px;">
+                    <strong style="font-size: 13px; color: #4a148c;">AI Insight: Frequently Borrowed Together</strong>
+                    <ul id="similarBooksList" style="margin-top: 5px; font-size: 13px; padding-left: 20px;"></ul>
+                </div>
                 <button type="submit" class="btn-primary w-100 mt-10">Update Book</button>
             </form>
         </div>
@@ -1486,6 +1490,10 @@
                         <option value="" disabled>No students found. Please add a student first.</option>
                         {% endfor %}
                     </select>
+                </div>
+                <div id="recommendationContainer" style="display: none; background: #e3f2fd; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
+                    <strong style="font-size: 13px; color: #0d47a1;">AI Recommended Books for this Student:</strong>
+                    <ul id="recommendationList" style="margin-top: 5px; font-size: 13px; padding-left: 20px;"></ul>
                 </div>
                 <div class="setting-item">
                     <label>Book</label>

@@ -196,6 +196,20 @@ def admin_dashboard(request):
     if request.GET.get('action') == 'generate_report':
         return generate_circulation_report(request)
 
+    if request.GET.get('api') == 'recommendations':
+        student_id = request.GET.get('student_id')
+        from .ml_utils import get_recommendations_for_student
+        recommendations = get_recommendations_for_student(student_id)
+        data = [{'id': b.id, 'title': b.title, 'author': b.author.name if b.author else 'Unknown'} for b in recommendations]
+        return HttpResponse(json.dumps({'recommendations': data}), content_type='application/json')
+
+    if request.GET.get('api') == 'similar_books':
+        book_id = request.GET.get('book_id')
+        from .ml_utils import get_similar_books
+        similar = get_similar_books(book_id)
+        data = [{'id': b.id, 'title': b.title, 'author': b.author.name if b.author else 'Unknown'} for b in similar]
+        return HttpResponse(json.dumps({'similar_books': data}), content_type='application/json')
+
     if request.method == 'POST':
         lib_settings = get_library_settings()
         if 'action' in request.POST:

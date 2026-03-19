@@ -15,7 +15,7 @@ class AkulConfig(AppConfig):
         thread.start()
 
     def run_daily_overdue_checks(self):
-        from akul.models import Circulation, Penalty, LibrarySettings, Notification, EmailLog
+        from akul.models import Circulation, Penalty, LibrarySettings, Notification, EmailLog, Student
         from django.core.mail import send_mail
 
         while True:
@@ -68,6 +68,30 @@ class AkulConfig(AppConfig):
                         if not Notification.objects.filter(message=notif_msg, created_at__date=today).exists():
                             Notification.objects.create(message=notif_msg)
                             
+                # --- AI Recommendation Emails (Monthly) ---
+                if today.day == 1:
+                    rec_email_sent = EmailLog.objects.filter(
+                        subject="Your Monthly Book Recommendations",
+                        sent_at__date=today
+                    ).exists()
+
+                    if getattr(lib_settings, 'enable_emails', True) and not rec_email_sent:
+                        from akul.ml_utils import get_recommendations_for_student
+                        
+                        for student in Student.objects.all():
+                            recommendations = get_recommendations_for_student(student.id, limit=3)
+                            if recommendations.exists():
+                                rec_list = "\n".join([f"- {b.title} by {b.author.name if b.author else 'Unknown'}" for b in recommendations])
+                                subject = "Your Monthly Book Recommendations"
+                                message = f"Dear {student.name},\n\nBased on your reading history and our library's activity, we think you'll love these books:\n\n{rec_list}\n\nVisit {lib_settings.library_name} to check them out!\n\nHappy Reading,\nThe Library Team"
+                                
+                                send_mail(subject, message, None, [student.email], fail_silently=True)
+                                try:
+                                    EmailLog.objects.create(recipient=student.email, subject=subject, message=message)
+                                except Exception:
+                                    pass
+                        print(f"[BACKGROUND TASK] Monthly AI recommendation emails sent.")
+
                 count = Notification.objects.count()
                 if count > 50:
                     last_ids = Notification.objects.order_by('-created_at').values_list('id', flat=True)[:50]

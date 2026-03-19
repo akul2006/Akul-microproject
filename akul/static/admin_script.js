@@ -43,6 +43,44 @@ document.addEventListener('DOMContentLoaded', function() {
     if (urlParams.get('search_query')) {
         showPage('books');
     }
+
+    // AI Recommendations for Issue Book
+    const issueStudentSelect = document.querySelector('#issueBookModal select[name="student"]');
+    if (issueStudentSelect) {
+        issueStudentSelect.addEventListener('change', function() {
+            const studentId = this.value;
+            const container = document.getElementById('recommendationContainer');
+            const list = document.getElementById('recommendationList');
+            
+            if (!studentId) {
+                if(container) container.style.display = 'none';
+                return;
+            }
+
+            if(container && list) {
+                container.style.display = 'block';
+                list.innerHTML = '<li><span class="text-muted">Analyzing reading history...</span></li>';
+
+                fetch(`?api=recommendations&student_id=${studentId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.recommendations && data.recommendations.length > 0) {
+                            list.innerHTML = '';
+                            data.recommendations.forEach(book => {
+                                let li = document.createElement('li');
+                                li.innerHTML = `<a href="javascript:void(0)" onclick="selectRecommendedBook('${book.id}')" style="color: #1565c0; text-decoration: none;"><strong>${book.title}</strong> by ${book.author}</a>`;
+                                list.appendChild(li);
+                            });
+                        } else {
+                            list.innerHTML = '<li><span class="text-muted">No recommendations available yet.</span></li>';
+                        }
+                    })
+                    .catch(() => {
+                        container.style.display = 'none';
+                    });
+            }
+        });
+    }
 });
 
 document.addEventListener('DOMContentLoaded', checkHash);
@@ -55,6 +93,13 @@ window.addEventListener('popstate', function() {
         showPage(tab);
     }
 });
+
+function selectRecommendedBook(bookId) {
+    const bookSelect = document.querySelector('#issueBookModal select[name="book"]');
+    if (bookSelect) {
+        bookSelect.value = bookId;
+    }
+}
 
 function showPage(pageName) {
     const pages = document.querySelectorAll('.page');
@@ -304,6 +349,32 @@ function openEditBookModal(id, title, authorId, isbn, totalQty, availQty, imageU
 
     if (document.getElementById('editBookLocation')) document.getElementById('editBookLocation').value = location || '';
     document.getElementById('editBookModal').style.display = "block";
+
+    // Fetch Similar Books
+    const container = document.getElementById('similarBooksContainer');
+    const list = document.getElementById('similarBooksList');
+    if (container && list) {
+        container.style.display = 'block';
+        list.innerHTML = '<li><span class="text-muted">Analyzing borrowing patterns...</span></li>';
+        
+        fetch(`?api=similar_books&book_id=${id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.similar_books && data.similar_books.length > 0) {
+                    list.innerHTML = '';
+                    data.similar_books.forEach(book => {
+                        let li = document.createElement('li');
+                        li.innerHTML = `<span style="color: #4a148c;"><strong>${book.title}</strong> by ${book.author}</span>`;
+                        list.appendChild(li);
+                    });
+                } else {
+                    list.innerHTML = '<li><span class="text-muted">Not enough data to find similar books yet.</span></li>';
+                }
+            })
+            .catch(() => {
+                container.style.display = 'none';
+            });
+    }
 }
 
 function closeEditBookModal() {

@@ -32,4 +32,5 @@ urlpatterns = [
     path('import_books_csv/', views.import_books_csv, name='import_books_csv'),
     path('export_students_csv/', views.export_students_csv, name='export_students_csv'),
     path('import_students_csv/', views.import_students_csv, name='import_students_csv'),
+    path('pay-penalty/<int:penalty_id>/', views.student_payment_page, name='student_payment_page'),
 ]

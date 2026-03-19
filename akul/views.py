@@ -258,7 +258,15 @@ def admin_dashboard(request):
                 
                 success_count = 0
                 for student, circs in student_overdues.items():
-                    books_list = "\n".join([f"- {c.book.title} (Due: {c.due_date})" for c in circs])
+                    books_info = []
+                    for c in circs:
+                        penalty = Penalty.objects.filter(student=student, book=c.book, status='unpaid').first()
+                        if penalty:
+                            books_info.append(f"- {c.book.title} (Due: {c.due_date}) | Pay Fine: http://127.0.0.1:8000/pay-penalty/{penalty.id}/")
+                        else:
+                            books_info.append(f"- {c.book.title} (Due: {c.due_date})")
+                            
+                    books_list = "\n".join(books_info)
                     subject = "URGENT: Overdue Library Books"
                     message = f"Dear {student.name},\n\nThis is an automated notice that you have the following overdue books:\n{books_list}\n\nPlease return them as soon as possible to avoid further penalties.\n\nRegards,\n{lib_settings.library_name} Admin"
                     
@@ -454,7 +462,12 @@ def admin_dashboard(request):
     for circ in overdue_circulations_list:
         if circ.student.email not in overdue_data:
             overdue_data[circ.student.email] = []
-        overdue_data[circ.student.email].append(circ.book.title)
+            
+        penalty = Penalty.objects.filter(student=circ.student, book=circ.book, status='unpaid').first()
+        if penalty:
+            overdue_data[circ.student.email].append(f"{circ.book.title} (Pay Fine: http://127.0.0.1:8000/pay-penalty/{penalty.id}/)")
+        else:
+            overdue_data[circ.student.email].append(circ.book.title)
 
     context = {
         'books': books,
@@ -1000,3 +1013,21 @@ def add_notification(message):
 def log_audit(request, action_message):
     username = request.user.username if request and hasattr(request, 'user') and request.user.is_authenticated else 'System'
     AuditLog.objects.create(username=username, action=action_message)
+
+def student_payment_page(request, penalty_id):
+    penalty = get_object_or_404(Penalty, id=penalty_id)
+    lib_settings = get_library_settings()
+    
+    if penalty.status == 'Paid':
+        return HttpResponse(f"<h1>Thank You!</h1><p>The penalty for '{penalty.book.title if penalty.book else 'Unknown'}' has already been paid.</p>")
+        
+    if request.method == "POST":
+        penalty.status = 'Paid'
+        penalty.save()
+
+        AuditLog.objects.create(username=penalty.student.name, action=f"paid a penalty of ₹{penalty.amount} online via Payment Gateway.")
+        add_notification(f"Payment Received: {penalty.student.name} paid ₹{penalty.amount} online.")
+        
+        return render(request, 'student_payment.html', {'penalty': penalty, 'lib_settings': lib_settings, 'success': True})
+        
+    return render(request, 'student_payment.html', {'penalty': penalty, 'lib_settings': lib_settings, 'success': False})

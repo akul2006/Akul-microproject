@@ -53,8 +53,16 @@ class AkulConfig(AppConfig):
                     )
 
                     if created or days_overdue % 3 == 0:
+                        pay_link = f"http://127.0.0.1:8000/pay-penalty/{penalty.id}/"
                         subject = f"Overdue Notice & Penalty Applied: {circ.book.title}"
-                        message = f"Dear {circ.student.name},\n\nYour borrowed book '{circ.book.title}' is now {days_overdue} days overdue.\nA penalty of ₹{total_fine} has been applied.\n\nPlease return the book.\n\nRegards,\n{lib_settings.library_name}"
+                        message = (
+                            f"Dear {circ.student.name},\n\n"
+                            f"Your borrowed book '{circ.book.title}' is now {days_overdue} days overdue.\n"
+                            f"A penalty of ₹{total_fine} has been applied.\n\n"
+                            f"Please return the book.\n\n"
+                            f"You can pay your fine online instantly here:\n{pay_link}\n\n"
+                            f"Regards,\n{lib_settings.library_name}"
+                        )
                         
                         if getattr(lib_settings, 'enable_emails', True):
                             send_mail(subject, message, None, [circ.student.email], fail_silently=True)

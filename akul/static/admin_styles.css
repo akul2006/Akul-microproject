@@ -27,6 +27,11 @@ body {
     overflow-y: auto;
     z-index: 1000;
     border-right: 1px solid #e8ecf1;
+    transition: transform 0.3s ease;
+}
+
+.sidebar.collapsed {
+    transform: translateX(-100%);
 }
 
 .logo {
@@ -81,6 +86,11 @@ body {
     flex: 1;
     background-color: #f5f7fa;
     min-height: 100vh;
+    transition: margin-left 0.3s ease;
+}
+
+.main-content.expanded {
+    margin-left: 0 !important;
 }
 
 /* Top Header */
@@ -101,6 +111,15 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+}
+
+.sidebar-toggle {
+    color: #333333;
+    transition: color 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+    color: #4A90E2;
 }
 
 .header-icon {

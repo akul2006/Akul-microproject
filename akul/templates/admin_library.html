@@ -84,6 +84,9 @@
         <!-- Top Header -->
         <header class="top-header">
             <div class="header-left">
+                <button type="button" class="sidebar-toggle" onclick="toggleSidebar()" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px;">
+                    <i data-lucide="menu"></i>
+                </button>
                 <div class="header-icon">
                     <img src="{% static 'img/logo.ico' %}" alt="Logo" class="logo-icon">
                 </div>
@@ -1562,6 +1565,6 @@
         const currentLibraryName = "{{ lib_settings.library_name|escapejs }}";
     </script>
 
-    <script src="{% static 'admin_script.js' %}?v=1.3"></script>
+    <script src="{% static 'admin_script.js' %}?v=1.4"></script>
 </body>
 </html>

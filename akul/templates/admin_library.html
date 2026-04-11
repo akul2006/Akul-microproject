@@ -204,7 +204,7 @@
 
                 <div class="card yellow">
                     <div class="card-content">
-                        <div class="icon-box"><i data-lucide="monitor"></i></div>
+                        <div class="icon-box"><i data-lucide="book-plus"></i></div>
                         <div class="stats">
                             <span class="number" id="reservedBooks">{{ reserved_books_count }}</span>
                             <span class="label">Available Books</span>
@@ -250,7 +250,7 @@
                                     <td>
                                         <div class="flex-center-gap">
                                             <div>
-                                                <strong>{{ circ.book.title }}</strong>
+                                                <strong class="cursor-pointer" onclick="openBookDetailsModal('{{ circ.book.title|escapejs }}', '{{ circ.book.author.name|default:circ.book.author|escapejs }}', '{{ circ.book.publisher.name|escapejs }}', '{{ circ.book.isbn|escapejs }}', '{{ circ.book.quantity }}', '{{ circ.book.available_quantity }}', '{{ circ.book.location|escapejs }}', '{{ circ.book.thumbnail_link|escapejs }}')" style="color: black;">{{ circ.book.title }}</strong>
                                                 <br><span class="text-muted font-sm">{{ circ.book.author.name }}</span>
                                             </div>
                                         </div>
@@ -308,7 +308,7 @@
                                             <div class="book-cover-placeholder-sm">📖</div>
                                             {% endif %}
                                             <div>
-                                                <strong>{{ book.title }}</strong>
+                                                <strong class="cursor-pointer" onclick="openBookDetailsModal('{{ book.title|escapejs }}', '{{ book.author.name|default:book.author|escapejs }}', '{{ book.publisher.name|escapejs }}', '{{ book.isbn|escapejs }}', '{{ book.quantity }}', '{{ book.available_quantity }}', '{{ book.location|escapejs }}', '{{ book.thumbnail_link|escapejs }}')" style="color: black;">{{ book.title }}</strong>
                                                 <br><span class="text-muted font-sm">by {{ book.author.name|default:book.author }}</span>
                                             </div>
                                         </div>
@@ -343,7 +343,7 @@
                             {% for circ in overdue_circulations|slice:":5" %}
                             <div class="issued-book-item overdue-item">
                                 <div>
-                                    <h4 class="overdue-title">{{ circ.book.title }}</h4>
+                                    <h4 class="overdue-title cursor-pointer" onclick="openBookDetailsModal('{{ circ.book.title|escapejs }}', '{{ circ.book.author.name|default:circ.book.author|escapejs }}', '{{ circ.book.publisher.name|escapejs }}', '{{ circ.book.isbn|escapejs }}', '{{ circ.book.quantity }}', '{{ circ.book.available_quantity }}', '{{ circ.book.location|escapejs }}', '{{ circ.book.thumbnail_link|escapejs }}')" style="color: black;">{{ circ.book.title }}</h4>
                                     <p class="overdue-student">Student: {{ circ.student.name }}</p>
                                 </div>
                                 <span class="overdue-due">Due: {{ circ.due_date|date:"M d" }}</span>
@@ -429,7 +429,7 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <strong>{{ book.title }}</strong><br>
+                                <strong class="cursor-pointer" onclick="openBookDetailsModal('{{ book.title|escapejs }}', '{{ book.author.name|default:book.author|escapejs }}', '{{ book.publisher.name|escapejs }}', '{{ book.isbn|escapejs }}', '{{ book.quantity }}', '{{ book.available_quantity }}', '{{ book.location|escapejs }}', '{{ book.thumbnail_link|escapejs }}')" style="color: black;">{{ book.title }}</strong><br>
                                 <span class="text-muted font-sm">
                                     {% if book.location %} {{ book.location }}{% else %}Location not set{% endif %}
                                 </span>
@@ -507,7 +507,7 @@
                                     {% for book in author.book_set.all %}
                                     <div class="modal-book-item">
                                         <div>
-                                            <strong>{{ book.title }}</strong>
+                                            <strong class="cursor-pointer" onclick="openBookDetailsModal('{{ book.title|escapejs }}', '{{ book.author.name|default:book.author|escapejs }}', '{{ book.publisher.name|escapejs }}', '{{ book.isbn|escapejs }}', '{{ book.quantity }}', '{{ book.available_quantity }}', '{{ book.location|escapejs }}', '{{ book.thumbnail_link|escapejs }}')" style="color: black;">{{ book.title }}</strong>
                                             <br><span class="text-muted font-md">ISBN: {{ book.isbn }}</span>
                                         </div>
                                     </div>
@@ -609,7 +609,13 @@
                                     {{ penalty.student.name }}
                                 </div>
                             </td>
-                            <td>{{ penalty.book.title|default:"-" }}</td>
+                            <td>
+                                {% if penalty.book %}
+                                <strong class="cursor-pointer" onclick="openBookDetailsModal('{{ penalty.book.title|escapejs }}', '{{ penalty.book.author.name|default:penalty.book.author|escapejs }}', '{{ penalty.book.publisher.name|escapejs }}', '{{ penalty.book.isbn|escapejs }}', '{{ penalty.book.quantity }}', '{{ penalty.book.available_quantity }}', '{{ penalty.book.location|escapejs }}', '{{ penalty.book.thumbnail_link|escapejs }}')" style="color: black;">{{ penalty.book.title }}</strong>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
                             <td>{{ penalty.due_date|default:"-" }}</td>
                             <td>{{ penalty.days_overdue|default:"0" }}</td>
                             <td>₹{{ penalty.amount }}</td>
@@ -865,7 +871,7 @@
                                     {{ circ.student.name }}
                                 </div>
                             </td>
-                            <td>{{ circ.book.title }}</td>
+                            <td><strong class="cursor-pointer" onclick="openBookDetailsModal('{{ circ.book.title|escapejs }}', '{{ circ.book.author.name|default:circ.book.author|escapejs }}', '{{ circ.book.publisher.name|escapejs }}', '{{ circ.book.isbn|escapejs }}', '{{ circ.book.quantity }}', '{{ circ.book.available_quantity }}', '{{ circ.book.location|escapejs }}', '{{ circ.book.thumbnail_link|escapejs }}')" style="color: black;">{{ circ.book.title }}</strong></td>
                             <td>{{ circ.due_date }}</td>
                             <td>{{ circ.return_date|default:"-" }}</td>
                             <td>{{ circ.issue_date|default:"-" }}</td>
@@ -1016,7 +1022,7 @@
                         <div class="modal-book-item">
                             <span class="modal-book-icon">📖</span>
                             <div>
-                                <strong>{{ book.title }}</strong>
+                                <strong class="cursor-pointer" onclick="openBookDetailsModal('{{ book.title|escapejs }}', '{{ book.author.name|default:book.author|escapejs }}', '{{ book.publisher.name|escapejs }}', '{{ book.isbn|escapejs }}', '{{ book.quantity }}', '{{ book.available_quantity }}', '{{ book.location|escapejs }}', '{{ book.thumbnail_link|escapejs }}')" style="color: black;">{{ book.title }}</strong>
                                 <br><span class="text-muted font-md">by {{ book.author.name }}</span>
                             </div>
                         </div>
@@ -1557,6 +1563,28 @@
         </div>
     </div>
 
+    <!-- Book Details Modal -->
+    <div id="bookDetailsModal" class="modal">
+        <div class="modal-content" style="width: 500px;">
+            <span class="close-modal" onclick="closeBookDetailsModal()">&times;</span>
+            <h2 id="detailsBookTitle" class="modal-header-bordered" style="margin-bottom: 15px;">Book Title</h2>
+            <div style="display: flex; gap: 20px;">
+                <div style="flex-shrink: 0;">
+                    <img id="detailsBookImage" src="" alt="Book Cover" style="width: 120px; height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #e8ecf1; display: none;">
+                    <div id="detailsBookPlaceholder" style="width: 120px; height: 180px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 40px; display: none;">📖</div>
+                </div>
+                <div style="flex-grow: 1; font-size: 14px; line-height: 1.8; color: #333;">
+                    <div><strong>Author:</strong> <span id="detailsBookAuthor"></span></div>
+                    <div><strong>Publisher:</strong> <span id="detailsBookPublisher"></span></div>
+                    <div><strong>ISBN:</strong> <span id="detailsBookIsbn"></span></div>
+                    <div><strong>Total Quantity:</strong> <span id="detailsBookTotal"></span></div>
+                    <div><strong>Available:</strong> <span id="detailsBookAvailable" style="font-weight: bold; color: #28a745;"></span></div>
+                    <div><strong>Location:</strong> <span id="detailsBookLocation"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // We keep these variables here because they use Django template tags
         // which cannot be processed inside a static .js file.
@@ -1565,6 +1593,6 @@
         const currentLibraryName = "{{ lib_settings.library_name|escapejs }}";
     </script>
 
-    <script src="{% static 'admin_script.js' %}?v=1.4"></script>
+    <script src="{% static 'admin_script.js' %}?v=1.5"></script>
 </body>
 </html>

@@ -728,6 +728,34 @@ function closeScanQRModal() {
     }
 }
 
+function openBookDetailsModal(title, author, publisher, isbn, totalQty, availQty, location, imageUrl) {
+    document.getElementById('detailsBookTitle').innerText = title;
+    document.getElementById('detailsBookAuthor').innerText = author || '-';
+    document.getElementById('detailsBookPublisher').innerText = publisher || '-';
+    document.getElementById('detailsBookIsbn').innerText = isbn || '-';
+    document.getElementById('detailsBookTotal').innerText = totalQty;
+    document.getElementById('detailsBookAvailable').innerText = availQty;
+    document.getElementById('detailsBookLocation').innerText = location || 'Not set';
+
+    const img = document.getElementById('detailsBookImage');
+    const placeholder = document.getElementById('detailsBookPlaceholder');
+
+    if (imageUrl && imageUrl.trim() !== '' && imageUrl !== 'None') {
+        img.src = imageUrl;
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+    } else {
+        img.style.display = 'none';
+        placeholder.style.display = 'flex';
+    }
+
+    document.getElementById('bookDetailsModal').style.display = 'block';
+}
+
+function closeBookDetailsModal() {
+    document.getElementById('bookDetailsModal').style.display = 'none';
+}
+
 window.onclick = function (event) {
     const modal = document.getElementById('publisherBooksModal');
     const addAuthorModal = document.getElementById('addAuthorModal');
@@ -749,6 +777,7 @@ window.onclick = function (event) {
     const editStudentModal = document.getElementById('editStudentModal');
     const importBooksModal = document.getElementById('importBooksModal');
     const importStudentsModal = document.getElementById('importStudentsModal');
+    const bookDetailsModal = document.getElementById('bookDetailsModal');
 
     if (modal && event.target == modal) {
         closePublisherModal();
@@ -790,6 +819,8 @@ window.onclick = function (event) {
         closeImportBooksModal();
     } else if (importStudentsModal && event.target == importStudentsModal) {
         closeImportStudentsModal();
+    } else if (bookDetailsModal && event.target == bookDetailsModal) {
+        closeBookDetailsModal();
     }
 }
 

@@ -713,7 +713,7 @@ function onScanSuccess(decodedText, decodedResult) {
 }
 
 function onScanFailure(error) {
-    console.warn("QR/Barcode scan failed:", error); // Log the error for debugging
+    console.warn("QR/Barcode scan failed:", error);
 }
 
 function closeScanQRModal() {
